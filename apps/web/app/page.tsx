@@ -283,6 +283,14 @@ function Funktion() {
           </div>
         ))}
       </div>
+      <div className="mt-8">
+        <Link
+          href="/onboarding"
+          className="inline-flex items-center gap-2 rounded-2xl border border-brand-300 bg-brand-50 px-5 py-3 text-[14px] font-semibold text-brand-800 transition hover:border-brand-600"
+        >
+          Den Start selbst ausprobieren →
+        </Link>
+      </div>
     </section>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import MobileNav from "@/components/mobile-nav";
 import SideNav from "@/components/side-nav";
 import { BRAND } from "@/lib/brand";
 
@@ -34,9 +35,10 @@ export default function DemoLayout({
       </aside>
 
       <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-sand-200 bg-white/85 px-6 backdrop-blur">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-sand-200 bg-white/85 px-4 backdrop-blur sm:px-6">
           <div className="flex items-center gap-3">
-            <p className="font-semibold text-sand-900">
+            <MobileNav />
+            <p className="truncate font-semibold text-sand-900">
               Pflegedienst Sonnenweg GmbH
             </p>
             <span className="rounded-lg border border-sand-200 bg-sand-50 px-2.5 py-1 text-[12px] font-semibold text-sand-600">
