@@ -14,13 +14,13 @@ KEY="${1:-$HOME/.ssh/famora_hetzner_ed25519}"
 HOST="root@46.224.7.46"
 cd "$(dirname "$0")/../apps/web"
 
-echo "→ Build (statischer Export)…"
+echo "== Build (statischer Export) =="
 npm run build
 
-echo "→ Sync nach $HOST…"
-rsync -az --delete out/ "$HOST:/home/deploy/apps/standalone-web/out/" \
+echo "== Sync nach $HOST =="
+rsync -az --delete out/ "$HOST":/home/deploy/apps/standalone-web/out/ \
   -e "ssh -i $KEY -o StrictHostKeyChecking=no"
 
-echo "→ Fertig. Live-Check:"
-curl -s -o /dev/null -w "   https://kontoklar.froehlichdienste.de/ → %{http_code}\n" \
+echo "== Fertig. Live-Check: =="
+curl -s -o /dev/null -w "   https://kontoklar.froehlichdienste.de/ -> %{http_code}\n" \
   https://kontoklar.froehlichdienste.de/ || true
