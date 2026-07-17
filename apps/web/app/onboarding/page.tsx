@@ -12,6 +12,7 @@ import { BRAND } from "@/lib/brand";
 
 const SCHRITTE = [
   "Unternehmen",
+  "Vorjahr",
   "Bank",
   "Erkennung",
   "Kanzlei",
@@ -187,7 +188,116 @@ function SchrittFirma({ weiter }: { weiter: () => void }) {
   );
 }
 
-/* ---------- Schritt 2: Bank ---------- */
+/* ---------- Schritt 2: Vorjahr (Bilanzkontinuität) ---------- */
+function SchrittVorjahr({
+  weiter,
+  zurueck,
+}: {
+  weiter: () => void;
+  zurueck: () => void;
+}) {
+  const [status, setStatus] = useState<"idle" | "liest" | "fertig">("idle");
+  function upload() {
+    setStatus("liest");
+    window.setTimeout(() => setStatus("fertig"), 1600);
+  }
+  return (
+    <Karte>
+      <h1 className="font-display text-2xl font-semibold text-sand-900">
+        Haben Sie einen Jahresabschluss vom Vorjahr?
+      </h1>
+      <p className="mt-2 text-[14.5px] text-sand-600">
+        Optional — aber Gold wert: {BRAND.name} übernimmt Ihre bisherigen
+        Konten und verwendet sie bevorzugt weiter. So bleibt Ihre Bilanz über
+        die Jahre vergleichbar (<strong>Bilanzkontinuität</strong>) — Kanzlei
+        und Betriebsprüfung danken es.
+      </p>
+      {status !== "fertig" ? (
+        <button
+          type="button"
+          onClick={upload}
+          disabled={status === "liest"}
+          className="mt-6 flex w-full flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-sand-300 bg-sand-50/60 px-6 py-10 text-center transition hover:border-brand-500 disabled:opacity-70"
+        >
+          {status === "liest" ? (
+            <>
+              <span
+                aria-hidden
+                className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-brand-600 border-t-transparent"
+              />
+              <span className="text-[14px] font-semibold text-sand-700">
+                Lese Kontennachweis &amp; Salden …
+              </span>
+            </>
+          ) : (
+            <>
+              <span aria-hidden className="text-2xl">
+                ⇪
+              </span>
+              <span className="text-[15px] font-semibold text-sand-800">
+                Jahresabschluss oder Summen-/Saldenliste hochladen
+              </span>
+              <span className="text-[12.5px] text-sand-500">
+                PDF, CSV oder E-Bilanz — auch mehrere Jahre möglich
+              </span>
+            </>
+          )}
+        </button>
+      ) : (
+        <div className="mt-6 rounded-2xl border border-brand-200 bg-brand-50/70 px-5 py-4">
+          <p className="flex items-center gap-2 text-[14px] font-semibold text-status-good">
+            ✓ Jahresabschluss 2025 gelesen
+          </p>
+          <ul className="tnum mt-2 space-y-1 text-[13.5px] text-brand-900/85">
+            <li>• Kontenrahmen erkannt: SKR45 (Gesundheitswesen)</li>
+            <li>
+              • <strong>78 bebuchte Konten</strong> übernommen — inkl. Ihrer
+              Individualkonten
+            </li>
+            <li>
+              • Eröffnungswerte als Saldenvortrag vorbereitet (Ihre Kanzlei
+              bestätigt sie)
+            </li>
+          </ul>
+          <p className="mt-2 text-[12.5px] text-brand-900/60">
+            Diese Konten werden bei Vorschlägen bevorzugt — Ihre Bilanz bleibt
+            an das Vorjahr anschlussfähig.
+          </p>
+        </div>
+      )}
+      <div className="mt-8 flex items-center justify-between border-t border-sand-100 pt-6">
+        <button
+          type="button"
+          onClick={zurueck}
+          className="rounded-xl px-4 py-2.5 text-[14px] font-semibold text-sand-600 transition hover:text-sand-900"
+        >
+          ← Zurück
+        </button>
+        <div className="flex items-center gap-4">
+          {status !== "fertig" && (
+            <button
+              type="button"
+              onClick={weiter}
+              className="text-[13.5px] font-semibold text-sand-500 underline-offset-2 transition hover:text-sand-800 hover:underline"
+            >
+              Ohne Vorjahr starten
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={weiter}
+            disabled={status === "liest"}
+            className="rounded-2xl bg-brand-700 px-7 py-3 text-[15px] font-semibold text-white shadow-md shadow-brand-700/20 transition hover:bg-brand-800 disabled:opacity-40"
+          >
+            Weiter
+          </button>
+        </div>
+      </div>
+    </Karte>
+  );
+}
+
+/* ---------- Schritt 3: Bank ---------- */
 function SchrittBank({
   weiter,
   zurueck,
@@ -316,9 +426,22 @@ function SchrittErkennung({
           </div>
         ))}
       </div>
+      <div
+        className={
+          "mt-4 flex items-center gap-2.5 rounded-2xl border border-brand-200 bg-brand-50/70 px-4 py-3 transition-opacity duration-500 " +
+          (zeigen >= 4 ? "opacity-100" : "opacity-0")
+        }
+      >
+        <span aria-hidden className="text-status-good">✓</span>
+        <p className="text-[13px] text-brand-900/85">
+          <strong className="tnum">78 Bestandskonten</strong> aus Ihrem
+          Abschluss 2025 werden bevorzugt weiterverwendet — Ihre Bilanz bleibt
+          kontinuierlich.
+        </p>
+      </div>
       <p
         className={
-          "mt-5 text-[13px] text-sand-500 transition-opacity duration-500 " +
+          "mt-4 text-[13px] text-sand-500 transition-opacity duration-500 " +
           (zeigen >= 4 ? "opacity-100" : "opacity-0")
         }
       >
@@ -505,7 +628,7 @@ function SchrittAutopilot({ zurueck }: { zurueck: () => void }) {
 
 export default function Onboarding() {
   const [schritt, setSchritt] = useState(0);
-  const weiter = () => setSchritt((s) => Math.min(s + 1, 4));
+  const weiter = () => setSchritt((s) => Math.min(s + 1, 5));
   const zurueck = () => setSchritt((s) => Math.max(s - 1, 0));
   return (
     <main className="min-h-screen bg-sand-100/60 px-5 py-8">
@@ -525,12 +648,13 @@ export default function Onboarding() {
           <Fortschritt aktiv={schritt} />
         </div>
         {schritt === 0 && <SchrittFirma weiter={weiter} />}
-        {schritt === 1 && <SchrittBank weiter={weiter} zurueck={zurueck} />}
-        {schritt === 2 && (
+        {schritt === 1 && <SchrittVorjahr weiter={weiter} zurueck={zurueck} />}
+        {schritt === 2 && <SchrittBank weiter={weiter} zurueck={zurueck} />}
+        {schritt === 3 && (
           <SchrittErkennung weiter={weiter} zurueck={zurueck} />
         )}
-        {schritt === 3 && <SchrittKanzlei weiter={weiter} zurueck={zurueck} />}
-        {schritt === 4 && <SchrittAutopilot zurueck={zurueck} />}
+        {schritt === 4 && <SchrittKanzlei weiter={weiter} zurueck={zurueck} />}
+        {schritt === 5 && <SchrittAutopilot zurueck={zurueck} />}
         <p className="mt-6 text-center text-[12px] text-sand-500">
           Demo-Flow mit simulierten Ergebnissen — so fühlt sich der echte
           Start an.

@@ -535,6 +535,14 @@ function Kanzlei() {
             </div>
           ))}
         </div>
+        <div className="mt-9">
+          <Link
+            href="/kanzlei"
+            className="inline-flex items-center gap-2 rounded-2xl bg-brand-300 px-6 py-3 text-[15px] font-bold text-brand-950 transition hover:bg-brand-200"
+          >
+            Kanzlei-Cockpit ansehen →
+          </Link>
+        </div>
       </div>
     </section>
   );
