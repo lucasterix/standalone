@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Kontoklar — Design-Tokens (Arbeitstitel-Brand)
+   ------------------------------------------------------------
+   Charakter: warm, ruhig, vertrauensvoll (Pflege/Sozialwirtschaft) —
+   und präzise, wo Zahlen stehen (Fibu). Petrol als Marke, warmes
+   Off-White als Fläche, Sand/Amber als Wärme-Akzent.
+
+   Chart-Paletten sind mit dem Dataviz-Validator geprüft (alle Checks
+   PASS): light auf #faf9f7, dark auf #132320.
+   ============================================================ */
+
+@theme {
+  /* Marke: Petrol/Teal — Vertrauen, Ruhe, Gesundheitsnähe */
+  --color-brand-50: #f0fbf9;
+  --color-brand-100: #d3f4ee;
+  --color-brand-200: #a7e8de;
+  --color-brand-300: #6fd5c8;
+  --color-brand-400: #3bbcae;
+  --color-brand-500: #16a294;
+  --color-brand-600: #0d9488;
+  --color-brand-700: #0f766e;
+  --color-brand-800: #115e59;
+  --color-brand-900: #134e4a;
+  --color-brand-950: #0a2e2b;
+
+  /* Warme Neutrale (Sand) statt kaltem Grau */
+  --color-sand-50: #faf9f7;
+  --color-sand-100: #f3f1ec;
+  --color-sand-200: #e7e3da;
+  --color-sand-300: #d5cfc2;
+  --color-sand-400: #b3aa98;
+  --color-sand-500: #8f8674;
+  --color-sand-600: #6f6757;
+  --color-sand-700: #57503f;
+  --color-sand-800: #3d382c;
+  --color-sand-900: #2a261e;
+
+  /* Wärme-Akzent (Amber, sparsam) */
+  --color-amber-acc: #b45309;
+
+  /* Status — reserviert für Zustände, nie als Serienfarbe */
+  --color-status-good: #15803d;
+  --color-status-good-bg: #ecfdf3;
+  --color-status-warn: #b45309;
+  --color-status-warn-bg: #fffbeb;
+  --color-status-crit: #b91c1c;
+  --color-status-crit-bg: #fef2f2;
+
+  /* Kategorial-Palette (validiert, feste Reihenfolge!) */
+  --color-cat-1: #0d9488;
+  --color-cat-2: #b45309;
+  --color-cat-3: #6d5bd0;
+  --color-cat-4: #b8456b;
+
+  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui,
+    -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-fraunces), "Fraunces", Georgia, "Times New Roman",
+    serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-sand-50);
+  color: var(--color-sand-900);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Display-Serif für große Überschriften */
+.font-display {
+  font-family: var(--font-display);
+  font-variation-settings: "SOFT" 60, "WONK" 0;
+  letter-spacing: -0.015em;
+}
+
+/* Zahlen tabellarisch — Fibu-Präzision */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sanftes Erscheinen für Landing-Sektionen */
+@media (prefers-reduced-motion: no-preference) {
+  .rise {
+    animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* Fokus sichtbar (Barrierefreiheit — Zielgruppe teils wenig technikaffin) */
+:focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
