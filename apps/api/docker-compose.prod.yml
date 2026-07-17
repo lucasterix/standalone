@@ -1,0 +1,35 @@
+# Produktion auf dem Hetzner-Server (Netz caddy_proxy existiert, extern).
+# Start:  docker compose -f docker-compose.prod.yml up -d --build
+services:
+  kontoklar_api:
+    build: .
+    container_name: kontoklar_api
+    restart: unless-stopped
+    environment:
+      KK_DATABASE_URL: postgresql+psycopg2://kontoklar:${KK_DB_PASSWORT}@kontoklar_db:5432/kontoklar
+    depends_on:
+      kontoklar_db:
+        condition: service_healthy
+    networks: [caddy_proxy, intern]
+  kontoklar_db:
+    image: postgres:16-alpine
+    container_name: kontoklar_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kontoklar
+      POSTGRES_PASSWORD: ${KK_DB_PASSWORT}
+      POSTGRES_DB: kontoklar
+    volumes:
+      - kontoklar_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kontoklar"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [intern]
+volumes:
+  kontoklar_pg:
+networks:
+  intern: {}
+  caddy_proxy:
+    external: true

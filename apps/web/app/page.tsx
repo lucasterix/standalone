@@ -51,6 +51,9 @@ function Nav() {
           >
             Produkt ansehen
           </Link>
+          <Link href="/login" className="hover:text-sand-900">
+            Anmelden
+          </Link>
           <a
             href="#pilot"
             className="rounded-xl bg-brand-700 px-4 py-2 font-semibold text-white shadow-sm transition hover:bg-brand-800"

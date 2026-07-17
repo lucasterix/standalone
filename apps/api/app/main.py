@@ -188,9 +188,21 @@ def journal_liste(
     if status:
         q = q.where(Journal.status == status)
     rows = db.scalars(q.order_by(Journal.beleg_datum.desc(), Journal.id.desc()).limit(limit))
+    bank_konten = {
+        k.sachkonto for k in db.scalars(
+            select(BankKonto).where(BankKonto.org_id == org_id)
+        )
+    }
+    def _richtung(j: Journal) -> str:
+        if j.soll in bank_konten:
+            return "einnahme"
+        if j.haben in bank_konten:
+            return "ausgabe"
+        return "neutral"
     return [
         {
             "id": j.id, "datum": j.beleg_datum.isoformat(), "betrag": str(j.betrag),
+            "richtung": _richtung(j),
             "soll": j.soll, "haben": j.haben, "bu": j.bu, "text": j.text,
             "partner": j.partner_name, "partner_nr": j.partner_nr,
             "status": j.status, "origin": j.origin,
