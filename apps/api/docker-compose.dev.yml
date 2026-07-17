@@ -1,0 +1,14 @@
+# Lokale Entwicklung: nur Postgres. API laeuft via `uvicorn app.main:app --reload`.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: kontoklar
+      POSTGRES_PASSWORD: kontoklar
+      POSTGRES_DB: kontoklar
+    ports:
+      - "5433:5432"
+    volumes:
+      - kontoklar_pg:/var/lib/postgresql/data
+volumes:
+  kontoklar_pg:
