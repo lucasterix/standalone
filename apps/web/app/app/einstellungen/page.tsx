@@ -82,6 +82,20 @@ export default function EinstellungenSeite() {
     laden();
   }
 
+  async function nachbuchen() {
+    const org = getOrgId();
+    if (!org) return;
+    setFehler(null);
+    try {
+      const res = await api.post<{ bestaetigt: number }>(`/orgs/${org}/autopilot/run`);
+      setToast(`${res.bestaetigt} Buchungen nachgebucht — Prüfliste entsprechend kleiner.`);
+      window.setTimeout(() => setToast(null), 4000);
+      laden();
+    } catch (e) {
+      setFehler(e instanceof Error ? e.message : "Fehler");
+    }
+  }
+
   async function notAus() {
     const org = getOrgId();
     if (!org) return;
@@ -153,6 +167,22 @@ export default function EinstellungenSeite() {
             );
           })}
         </div>
+        {sim && est && (sim.stufen[est.autopilot_stufe] ?? 0) > 0 && (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50/70 px-4 py-3">
+            <p className="text-[13.5px] text-brand-900">
+              Die Stufe <strong>{STUFEN.find((s) => s.key === est.autopilot_stufe)?.name}</strong>{" "}
+              würde <strong className="tnum">{sim.stufen[est.autopilot_stufe]}</strong> der{" "}
+              <span className="tnum">{sim.offen}</span> offenen Fälle sofort buchen.
+            </p>
+            <button
+              type="button"
+              onClick={nachbuchen}
+              className="rounded-xl bg-brand-700 px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-brand-800"
+            >
+              Jetzt nachbuchen
+            </button>
+          </div>
+        )}
         <div className="mt-4 flex items-center justify-between gap-3 border-t border-sand-100 pt-4">
           <p className="text-[12.5px] text-sand-500">
             Alles Automatische ist markiert und umkehrbar — der Fallback wird nie automatisch gebucht.

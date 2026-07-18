@@ -117,3 +117,30 @@ erklärt, WAS gerade passiert und WARUM es sicher ist.
 3. Dark Mode (vorbereitet, s. o.).
 4. Kanzlei-Cockpit-IA (eigene Nav? eigener Host?) — nach ersten
    Kanzlei-Gesprächen.
+
+---
+
+## Redesign 2.0 — Plan (18.07., wartet auf Daniels Varianten-Wahl)
+
+Drei Design-Sprachen als klickbare Live-Mockups derselben Übersichts-Seite
+unter `/design/` (Screenshots: docs/mockups/design-a|b|c.png):
+
+| | These | Stärke | Risiko |
+|---|---|---|---|
+| **A — Editorial Ledger** | Fibu ist ein Dokument: Magazin-Typografie, Hairlines statt Karten, Serifen-Zahlen, Marginalien | Maximal eigenständig, strahlt Seriosität + Ruhe aus; niemand im Fibu-Markt sieht so aus | Wirkt statisch; Interaktionen brauchen besonders sorgfältige Affordances |
+| **B — Cockpit** | Der Autopilot verdient ein Instrumentenbrett: dunkles Petrol, Glas, Quoten-Ring, Glow | Modernste SaaS-Anmutung, Dataviz glänzt, „Tech-Vertrauen" | Dark-only ist fürs Büro tagsüber anstrengend; Druck/Scan-Kontext schwierig |
+| **C — Bento** | Buchhaltung darf sich leicht anfühlen: farbige Kacheln, runde Formen, Emojis | Am nahbarsten, niedrigste Einstiegshürde, gut für Nicht-Buchhalter | Kann „verspielt" wirken — beim Thema Geld ein echtes Vertrauensrisiko bei Kanzleien |
+
+### Umsetzungsplan nach der Wahl
+1. **Tokenisierung**: gewählte Sprache in `globals.css`-Tokens gießen
+   (Flächen, Radien, Schatten/Glow, Typo-Skala, Akzente) — eine Wahrheit,
+   kein Seiten-Stilbruch.
+2. **Reihenfolge**: App-Shell/Nav → Übersicht → Prüfliste → Import → DATEV
+   → Einstellungen → Kanzlei-Cockpit → Login/Registrieren/Wizard →
+   Landing + /demo zuletzt (Außenwirkung erst, wenn innen konsistent).
+3. **Invarianten (gelten in jeder Variante)**: `.tnum` für alle Zahlen,
+   Dataviz-Regeln (validierte Palette, eine Achse, Status nie als Deko),
+   Status-Farben nur mit Icon+Text, WCAG-AA-Kontrast, Empty/Loading/Error
+   je Seite, Screenshots-vor-Merge.
+4. **Verifikation**: je Seite Live-E2E + Screenshot-Review; Abschluss =
+   voller Klickpfad Registrierung→Wizard→Import→Prüfliste→DATEV.
