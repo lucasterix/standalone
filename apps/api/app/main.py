@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session as DbSession
 from app.api.auth_routes import router as auth_router
 from app.api.fach_routes import router as fach_router
 from app.api.kanzlei_routes import router as kanzlei_router
+from app.api.personal_routes import router as personal_router
 from app.api.verkauf_routes import router as verkauf_router
 from app.core.auth import OrgZugriff, current_user, org_zugriff, require_org
 from app.core.settings import settings
@@ -38,6 +39,7 @@ app.include_router(auth_router)
 app.include_router(kanzlei_router)
 app.include_router(fach_router)
 app.include_router(verkauf_router)
+app.include_router(personal_router)
 
 
 @app.on_event("startup")

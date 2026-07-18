@@ -74,6 +74,15 @@ const INTROS: Record<string, Intro> = {
       "Eine gestellte Rechnung wird automatisch ein offener Posten: Geht die Zahlung auf der Bank ein, bucht der Autopilot sie dagegen.",
     ],
   },
+  "/app/personal": {
+    titel: "Das Personal-Onboarding",
+    emoji: "🤝",
+    punkte: [
+      "Erstellen Sie einen Link (Kurzversion oder umfangreicher Personalfragebogen) und schicken Sie ihn der neuen Kollegin — per Mail oder Messenger.",
+      "Das Formular ist Whitelabel: Dort steht nur Ihr Firmenname, kein Kontoklar.",
+      "Sobald es ausgefüllt ist, sehen Sie hier alle Angaben gesammelt — fertig für Vertrag und erste Lohnabrechnung.",
+    ],
+  },
   "/app/kanzlei": {
     titel: "Das Kanzlei-Cockpit",
     emoji: "🏛️",

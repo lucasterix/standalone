@@ -20,6 +20,7 @@ const NAV = [
   { href: "/app/import", label: "Bank-Import", icon: "⇣" },
   { href: "/app/buchungen", label: "Buchungen", icon: "≣" },
   { href: "/app/verkauf", label: "Verkauf", icon: "▤" },
+  { href: "/app/personal", label: "Personal", icon: "⚉" },
   { href: "/app/datev", label: "DATEV", icon: "⇪" },
   { href: "/app/einstellungen", label: "Einstellungen", icon: "⚙" },
 ];
