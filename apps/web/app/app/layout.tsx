@@ -10,6 +10,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api, clearSession, getOrgId, istAngemeldet, setOrgId, type Ich } from "@/lib/client";
 import { BRAND } from "@/lib/brand";
+import SeitenIntro from "@/components/seiten-intro";
+import { LogoMark } from "@/components/logo";
 
 const NAV = [
   { href: "/app", label: "Übersicht", icon: "◧" },
@@ -72,12 +74,7 @@ export default function AppLayout({
     >
       <aside className="tile sticky top-4 m-4 hidden h-[calc(100vh-2rem)] w-60 shrink-0 flex-col px-4 py-5 md:flex">
         <Link href="/" className="flex items-baseline gap-1.5 px-2">
-          <span
-            aria-hidden
-            className="relative top-[1px] inline-block h-3.5 w-3.5 rounded-[5px] bg-brand-600"
-          >
-            <span className="absolute inset-[3.5px] rounded-full bg-white" />
-          </span>
+          <LogoMark className="h-3.5 w-3.5" />
           <span className="font-display text-lg font-semibold text-ink">
             {BRAND.name}
           </span>
@@ -137,7 +134,9 @@ export default function AppLayout({
           <p className="truncate rounded-full bg-white px-4 py-2 text-[13px] font-semibold text-ink shadow-sm">
             {org?.name ?? "…"}
           </p>
-          {ich && (
+          <div className="flex items-center gap-2.5">
+            <SeitenIntro pfad={pathname} />
+            {ich && (
             <span
               title={ich.name}
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-900 text-[13px] font-bold text-white"
@@ -146,6 +145,7 @@ export default function AppLayout({
               <span className="sr-only">{ich.name}</span>
             </span>
           )}
+          </div>
         </header>
         {children}
       </div>

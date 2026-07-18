@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BRAND } from "@/lib/brand";
+import { LogoMark } from "@/components/logo";
 
 /* ============================================================
    Landing — Fokus Pflege/Sozialwirtschaft.
@@ -10,12 +11,7 @@ import { BRAND } from "@/lib/brand";
 function Wordmark({ dark = false }: { dark?: boolean }) {
   return (
     <span className="inline-flex items-baseline gap-1.5">
-      <span
-        aria-hidden
-        className="relative top-[1px] inline-block h-3.5 w-3.5 rounded-[5px] bg-brand-600"
-      >
-        <span className="absolute inset-[3.5px] rounded-full bg-bento-bg" />
-      </span>
+      <LogoMark className="h-3.5 w-3.5" />
       <span
         className={`font-display text-xl font-semibold ${dark ? "text-sand-50" : "text-sand-900"}`}
       >

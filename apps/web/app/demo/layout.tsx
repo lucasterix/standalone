@@ -2,6 +2,7 @@ import Link from "next/link";
 import MobileNav from "@/components/mobile-nav";
 import SideNav from "@/components/side-nav";
 import { BRAND } from "@/lib/brand";
+import { LogoMark } from "@/components/logo";
 
 /* App-Shell des Produkt-Prototyps: ruhige Sidebar, viel Fläche für Inhalt.
    Alles mit Beispieldaten — Design-Zielbild, kein Backend. */
@@ -13,12 +14,7 @@ export default function DemoLayout({
     <div className="flex min-h-screen bg-bento-bg">
       <aside className="tile sticky top-4 m-4 hidden h-[calc(100vh-2rem)] w-60 shrink-0 flex-col px-4 py-5 md:flex">
         <Link href="/" className="flex items-baseline gap-1.5 px-2">
-          <span
-            aria-hidden
-            className="relative top-[1px] inline-block h-3.5 w-3.5 rounded-[5px] bg-brand-600"
-          >
-            <span className="absolute inset-[3.5px] rounded-full bg-white" />
-          </span>
+          <LogoMark className="h-3.5 w-3.5" />
           <span className="font-display text-lg font-semibold text-sand-900">
             {BRAND.name}
           </span>

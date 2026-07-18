@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BRAND } from "@/lib/brand";
+import { LogoMark } from "@/components/logo";
 
 /* ============================================================
    Kanzlei-Cockpit — das zweite Gesicht des Produkts (PRODUKT.md § 1).
@@ -117,12 +118,7 @@ export default function KanzleiCockpit() {
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-baseline gap-1.5">
-              <span
-                aria-hidden
-                className="relative top-[1px] inline-block h-3.5 w-3.5 rounded-[5px] bg-brand-600"
-              >
-                <span className="absolute inset-[3.5px] rounded-full bg-white" />
-              </span>
+              <LogoMark className="h-3.5 w-3.5" />
               <span className="font-display text-lg font-semibold text-sand-900">
                 {BRAND.name}
               </span>

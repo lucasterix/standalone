@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api, setSession } from "@/lib/client";
 import { BRAND } from "@/lib/brand";
+import { LogoMark } from "@/components/logo";
 
 type Antwort = { user_id: number; org_id: number | null };
 
@@ -50,12 +51,7 @@ export default function Registrieren() {
       <div className="w-full max-w-md">
         <div className="mb-7 text-center">
           <Link href="/" className="inline-flex items-baseline gap-1.5">
-            <span
-              aria-hidden
-              className="relative top-[1px] inline-block h-3.5 w-3.5 rounded-[5px] bg-brand-600"
-            >
-              <span className="absolute inset-[3.5px] rounded-full bg-sand-100" />
-            </span>
+            <LogoMark className="h-3.5 w-3.5" />
             <span className="font-display text-2xl font-semibold text-sand-900">
               {BRAND.name}
             </span>
