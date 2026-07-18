@@ -11,12 +11,14 @@ import { useEffect, useState } from "react";
 import { api, clearSession, getOrgId, istAngemeldet, setOrgId, type Ich } from "@/lib/client";
 import { BRAND } from "@/lib/brand";
 import SeitenIntro from "@/components/seiten-intro";
+import Assistent from "@/components/assistent";
 import { LogoMark } from "@/components/logo";
 
 const NAV = [
   { href: "/app", label: "Übersicht", icon: "◧" },
   { href: "/app/pruefliste", label: "Prüfliste", icon: "☑" },
   { href: "/app/import", label: "Bank-Import", icon: "⇣" },
+  { href: "/app/verkauf", label: "Verkauf", icon: "▤" },
   { href: "/app/datev", label: "DATEV", icon: "⇪" },
   { href: "/app/einstellungen", label: "Einstellungen", icon: "⚙" },
 ];
@@ -148,6 +150,7 @@ export default function AppLayout({
           </div>
         </header>
         {children}
+        <Assistent />
       </div>
     </div>
   );

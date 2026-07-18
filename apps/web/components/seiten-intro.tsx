@@ -56,6 +56,15 @@ const INTROS: Record<string, Intro> = {
       "Unter Partner-Regeln sehen Sie, was das System gelernt hat — jede Regel mit ihrer Wirkungszahl, jederzeit abschaltbar.",
     ],
   },
+  "/app/verkauf": {
+    titel: "Der Verkauf",
+    emoji: "🧾",
+    punkte: [
+      "Erstellen Sie Angebote und machen Sie sie per Klick zur Rechnung — mit fortlaufenden Nummern.",
+      "Jede Rechnung ist als E-Rechnung (XRechnung-XML nach EN 16931) abrufbar — Pflichtformat seit 2025; § 4 Nr. 16 wird korrekt ausgewiesen.",
+      "Eine gestellte Rechnung wird automatisch ein offener Posten: Geht die Zahlung auf der Bank ein, bucht der Autopilot sie dagegen.",
+    ],
+  },
   "/app/kanzlei": {
     titel: "Das Kanzlei-Cockpit",
     emoji: "🏛️",
