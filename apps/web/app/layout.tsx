@@ -19,6 +19,7 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   title: `${BRAND.name} — ${BRAND.claim}`,
   description: BRAND.description,
+  manifest: "/manifest.webmanifest",
 };
 
 export default function RootLayout({
@@ -26,7 +27,16 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="de" className={`${inter.variable} ${fraunces.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* PWA: Service Worker (network-first — Web-Deploys sind sofort
+            auch in der installierten Desktop-App live). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js")}`,
+          }}
+        />
+      </body>
     </html>
   );
 }
