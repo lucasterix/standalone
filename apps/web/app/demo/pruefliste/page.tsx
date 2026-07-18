@@ -131,7 +131,7 @@ const ART_STIL: Record<Chip["art"], { chip: string; tag: string }> = {
 
 function Toast({ text }: { text: string }) {
   return (
-    <div className="pointer-events-none fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-2xl border border-brand-200 bg-white px-5 py-3 shadow-xl">
+    <div className="pointer-events-none fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-white px-5 py-3 shadow-xl">
       <p className="flex items-center gap-2 text-[14px] font-semibold text-sand-900">
         <span className="text-status-good" aria-hidden>
           ✓
@@ -159,7 +159,7 @@ function ItemKarte({
   const istErstattung = gewaehlt.art === "erstattung";
 
   return (
-    <li className="overflow-hidden rounded-2xl border border-sand-200 bg-white shadow-sm transition">
+    <li className="tile overflow-hidden transition">
       {/* Kopfzeile */}
       <button
         type="button"
@@ -206,7 +206,7 @@ function ItemKarte({
               <p className="text-[11px] font-semibold uppercase tracking-wider text-sand-500">
                 {item.einnahme ? "Geld eingegangen auf" : "Bezahlt von"}
               </p>
-              <div className="mt-2 rounded-xl border border-sand-200 bg-white px-4 py-3">
+              <div className="mt-2 rounded-2xl border border-sand-200 bg-white px-4 py-3">
                 <p className="tnum font-semibold text-sand-900">1260 · Bank</p>
                 <p className="mt-0.5 flex items-center gap-1.5 text-[12px] text-sand-500">
                   <span aria-hidden>🔒</span> fixiert — die Bankseite stimmt
@@ -229,7 +229,7 @@ function ItemKarte({
                       type="button"
                       onClick={() => setGewaehlt(c)}
                       className={
-                        "rounded-xl border px-3.5 py-2 text-[13px] font-medium transition " +
+                        "rounded-full border px-3.5 py-2 text-[13px] font-medium transition " +
                         (aktiv
                           ? "border-brand-700 bg-brand-700 text-white shadow-sm"
                           : ART_STIL[c.art].chip + " hover:border-brand-500")
@@ -238,7 +238,7 @@ function ItemKarte({
                       <span className="tnum">{c.konto}</span> · {c.label}
                       <span
                         className={
-                          "ml-1.5 rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide " +
+                          "ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide " +
                           (aktiv
                             ? "bg-white/20 text-white"
                             : "bg-sand-100 text-sand-500")
@@ -262,7 +262,7 @@ function ItemKarte({
                       <label
                         key={g.datum + g.text}
                         className={
-                          "flex cursor-pointer items-center justify-between rounded-xl border px-3.5 py-2.5 text-[13px] transition " +
+                          "flex cursor-pointer items-center justify-between rounded-2xl border px-3.5 py-2.5 text-[13px] transition " +
                           (grundbuchung === i
                             ? "border-brand-600 bg-white"
                             : "border-sand-200 bg-white/60 hover:border-sand-300")
@@ -325,14 +325,14 @@ function ItemKarte({
                   <button
                     type="button"
                     onClick={onToggle}
-                    className="rounded-xl border border-sand-300 px-4 py-2 text-[13px] font-semibold text-sand-700 transition hover:border-sand-400"
+                    className="knopf knopf-kontur px-4 py-2 text-[13px]"
                   >
                     Später
                   </button>
                   <button
                     type="button"
                     onClick={() => onBuchen(lernen)}
-                    className="rounded-xl bg-brand-700 px-5 py-2 text-[13px] font-semibold text-white shadow-sm transition hover:bg-brand-800"
+                    className="knopf knopf-primaer px-5 py-2 text-[13px] shadow-sm"
                   >
                     Buchen
                   </button>
@@ -393,17 +393,17 @@ export default function Pruefliste() {
       </div>
 
       {items.length === 0 ? (
-        <div className="rounded-3xl border border-brand-200 bg-white px-8 py-16 text-center shadow-sm">
+        <div className="tile tile-mint px-8 py-16 text-center">
           <span
             aria-hidden
-            className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-status-good-bg text-2xl text-status-good"
+            className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white text-2xl text-status-good"
           >
             ✓
           </span>
-          <h2 className="font-display mt-4 text-xl font-semibold text-sand-900">
+          <h2 className="font-display mt-4 text-xl font-semibold text-ink">
             Monat erledigt.
           </h2>
-          <p className="mx-auto mt-2 max-w-md text-[14px] text-sand-600">
+          <p className="mx-auto mt-2 max-w-md text-[14px] text-tile-mint-ink">
             Alle 737 Juni-Umsätze sind verbucht, der Saldenabgleich ist
             Cent-genau. Der DATEV-Stapel wartet unter{" "}
             <a href="/demo/datev" className="font-semibold text-brand-700 underline">

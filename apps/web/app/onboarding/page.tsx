@@ -60,7 +60,7 @@ function Fortschritt({ aktiv }: { aktiv: number }) {
 
 function Karte({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rise rounded-3xl border border-sand-200 bg-white p-7 shadow-[0_24px_60px_-30px_rgba(19,78,74,0.25)] sm:p-9">
+    <div className="rise tile p-7 sm:p-9">
       {children}
     </div>
   );
@@ -83,7 +83,7 @@ function Aktionen({
         <button
           type="button"
           onClick={zurueck}
-          className="rounded-xl px-4 py-2.5 text-[14px] font-semibold text-sand-600 transition hover:text-sand-900"
+          className="rounded-full px-4 py-2.5 text-[14px] font-semibold text-sand-600 transition hover:text-sand-900"
         >
           ← Zurück
         </button>
@@ -94,7 +94,7 @@ function Aktionen({
         type="button"
         onClick={weiter}
         disabled={!weiterAktiv}
-        className="rounded-2xl bg-brand-700 px-7 py-3 text-[15px] font-semibold text-white shadow-md shadow-brand-700/20 transition hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-40"
+        className="knopf knopf-primaer px-7 py-3 text-[15px] shadow-md shadow-brand-700/20 disabled:cursor-not-allowed disabled:opacity-40"
       >
         {weiterLabel}
       </button>
@@ -125,7 +125,7 @@ function SchrittFirma({ weiter }: { weiter: () => void }) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="z. B. Pflegedienst Sonnenweg GmbH"
-            className="mt-1.5 w-full rounded-xl border border-sand-300 bg-white px-4 py-3 text-[15px] text-sand-900 placeholder:text-sand-400 focus:border-brand-600 focus:outline-none"
+            className="mt-1.5 w-full rounded-2xl border border-sand-300 bg-white px-4 py-3 text-[15px] text-sand-900 placeholder:text-sand-400 focus:border-brand-600 focus:outline-none"
           />
         </label>
         <div className="grid gap-5 sm:grid-cols-2">
@@ -136,7 +136,7 @@ function SchrittFirma({ weiter }: { weiter: () => void }) {
             <select
               value={form}
               onChange={(e) => setForm(e.target.value)}
-              className="mt-1.5 w-full rounded-xl border border-sand-300 bg-white px-4 py-3 text-[15px] text-sand-900 focus:border-brand-600 focus:outline-none"
+              className="mt-1.5 w-full rounded-2xl border border-sand-300 bg-white px-4 py-3 text-[15px] text-sand-900 focus:border-brand-600 focus:outline-none"
             >
               {["GmbH", "gGmbH", "UG", "e. V.", "Einzelunternehmen"].map(
                 (f) => (
@@ -152,7 +152,7 @@ function SchrittFirma({ weiter }: { weiter: () => void }) {
             <select
               value={branche}
               onChange={(e) => setBranche(e.target.value)}
-              className="mt-1.5 w-full rounded-xl border border-sand-300 bg-white px-4 py-3 text-[15px] text-sand-900 focus:border-brand-600 focus:outline-none"
+              className="mt-1.5 w-full rounded-2xl border border-sand-300 bg-white px-4 py-3 text-[15px] text-sand-900 focus:border-brand-600 focus:outline-none"
             >
               {[
                 "Ambulante Pflege",
@@ -166,7 +166,7 @@ function SchrittFirma({ weiter }: { weiter: () => void }) {
           </label>
         </div>
         {/* Sichtbare Konsequenz statt stummem Formular */}
-        <div className="rounded-2xl border border-brand-200 bg-brand-50/70 px-5 py-4">
+        <div className="rounded-2xl bg-tile-mint/70 px-5 py-4">
           <p className="text-[13px] font-semibold text-brand-900">
             Das richten wir daraus ein:
           </p>
@@ -244,7 +244,7 @@ function SchrittVorjahr({
           )}
         </button>
       ) : (
-        <div className="mt-6 rounded-2xl border border-brand-200 bg-brand-50/70 px-5 py-4">
+        <div className="mt-6 rounded-2xl bg-tile-mint/70 px-5 py-4">
           <p className="flex items-center gap-2 text-[14px] font-semibold text-status-good">
             ✓ Jahresabschluss 2025 gelesen
           </p>
@@ -269,7 +269,7 @@ function SchrittVorjahr({
         <button
           type="button"
           onClick={zurueck}
-          className="rounded-xl px-4 py-2.5 text-[14px] font-semibold text-sand-600 transition hover:text-sand-900"
+          className="rounded-full px-4 py-2.5 text-[14px] font-semibold text-sand-600 transition hover:text-sand-900"
         >
           ← Zurück
         </button>
@@ -287,7 +287,7 @@ function SchrittVorjahr({
             type="button"
             onClick={weiter}
             disabled={status === "liest"}
-            className="rounded-2xl bg-brand-700 px-7 py-3 text-[15px] font-semibold text-white shadow-md shadow-brand-700/20 transition hover:bg-brand-800 disabled:opacity-40"
+            className="knopf knopf-primaer px-7 py-3 text-[15px] shadow-md shadow-brand-700/20 disabled:opacity-40"
           >
             Weiter
           </button>
@@ -335,7 +335,7 @@ function SchrittBank({
             type="button"
             onClick={() => verbinden(b)}
             className={
-              "rounded-xl border px-4 py-3.5 text-left text-[14px] font-semibold transition " +
+              "rounded-2xl border px-4 py-3.5 text-left text-[14px] font-semibold transition " +
               (bank === b
                 ? "border-brand-700 bg-brand-50 text-brand-800"
                 : "border-sand-200 bg-white text-sand-800 hover:border-brand-500")
@@ -346,7 +346,7 @@ function SchrittBank({
         ))}
       </div>
       {status !== "idle" && (
-        <div className="mt-5 rounded-2xl border border-sand-200 bg-sand-50 px-5 py-4">
+        <div className="zeile-soft mt-5 px-5 py-4">
           {status === "laedt" ? (
             <p className="flex items-center gap-2.5 text-[14px] text-sand-700">
               <span
@@ -412,11 +412,11 @@ function SchrittErkennung({
           <div
             key={b.text}
             className={
-              "rounded-2xl border border-sand-200 bg-sand-50/60 px-5 py-4 transition-all duration-500 " +
+              "zeile-soft px-5 py-4 transition-all duration-500 " +
               (zeigen > i ? "opacity-100" : "translate-y-2 opacity-0")
             }
           >
-            <p className="tnum font-display text-2xl font-bold text-brand-700">
+            <p className="tnum zahl-hero text-2xl text-brand-700">
               {b.zahl}
             </p>
             <p className="mt-0.5 text-[14px] font-semibold text-sand-900">
@@ -428,7 +428,7 @@ function SchrittErkennung({
       </div>
       <div
         className={
-          "mt-4 flex items-center gap-2.5 rounded-2xl border border-brand-200 bg-brand-50/70 px-4 py-3 transition-opacity duration-500 " +
+          "mt-4 flex items-center gap-2.5 rounded-2xl bg-tile-mint/70 px-4 py-3 transition-opacity duration-500 " +
           (zeigen >= 4 ? "opacity-100" : "opacity-0")
         }
       >
@@ -478,7 +478,7 @@ function SchrittKanzlei({
           </span>
           <input
             placeholder="z. B. Steuerkanzlei Meyer & Kollegen"
-            className="mt-1.5 w-full rounded-xl border border-sand-300 bg-white px-4 py-3 text-[15px] text-sand-900 placeholder:text-sand-400 focus:border-brand-600 focus:outline-none"
+            className="mt-1.5 w-full rounded-2xl border border-sand-300 bg-white px-4 py-3 text-[15px] text-sand-900 placeholder:text-sand-400 focus:border-brand-600 focus:outline-none"
           />
         </label>
         <div className="space-y-2.5">
@@ -556,7 +556,7 @@ function SchrittAutopilot({ zurueck }: { zurueck: () => void }) {
           </p>
           <Link
             href="/demo"
-            className="mt-7 inline-block rounded-2xl bg-brand-700 px-7 py-3.5 text-[15px] font-semibold text-white shadow-md shadow-brand-700/20 transition hover:bg-brand-800"
+            className="knopf knopf-primaer mt-7 inline-block px-7 py-3 text-[15px] shadow-md shadow-brand-700/20"
           >
             Zum Dashboard →
           </Link>
@@ -631,7 +631,7 @@ export default function Onboarding() {
   const weiter = () => setSchritt((s) => Math.min(s + 1, 5));
   const zurueck = () => setSchritt((s) => Math.max(s - 1, 0));
   return (
-    <main className="min-h-screen bg-sand-100/60 px-5 py-8">
+    <main className="min-h-screen bg-bento-bg px-5 py-8">
       <div className="mx-auto max-w-2xl">
         <div className="mb-7 flex flex-col items-center gap-5">
           <Link href="/" className="flex items-baseline gap-1.5">
@@ -639,7 +639,7 @@ export default function Onboarding() {
               aria-hidden
               className="relative top-[1px] inline-block h-3.5 w-3.5 rounded-[5px] bg-brand-600"
             >
-              <span className="absolute inset-[3.5px] rounded-full bg-sand-100" />
+              <span className="absolute inset-[3.5px] rounded-full bg-bento-bg" />
             </span>
             <span className="font-display text-xl font-semibold text-sand-900">
               {BRAND.name}

@@ -32,7 +32,7 @@ export default function MobileNav() {
         aria-label="Menü öffnen"
         aria-expanded={offen}
         onClick={() => setOffen(true)}
-        className="flex h-9 w-9 items-center justify-center rounded-xl border border-sand-200 text-sand-700"
+        className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sand-700 shadow-sm"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden>
           <path
@@ -53,7 +53,7 @@ export default function MobileNav() {
             onClick={() => setOffen(false)}
             className="absolute inset-0 bg-sand-900/30 backdrop-blur-[2px]"
           />
-          <nav className="absolute inset-y-0 left-0 flex w-72 flex-col bg-white p-5 shadow-2xl">
+          <nav className="absolute inset-y-0 left-0 flex w-72 flex-col rounded-r-[28px] bg-white p-5 shadow-2xl">
             <div className="mb-6 flex items-center justify-between">
               <span className="font-display text-lg font-semibold text-sand-900">
                 Menü
@@ -78,15 +78,15 @@ export default function MobileNav() {
                     key={n.href}
                     href={n.href}
                     className={
-                      "flex items-center justify-between rounded-xl px-3.5 py-3 text-[15px] font-medium " +
+                      "flex items-center justify-between rounded-full px-4 py-3 text-[15px] font-medium " +
                       (aktiv
-                        ? "bg-brand-50 text-brand-800"
+                        ? "bg-brand-700 font-semibold text-white shadow-sm"
                         : "text-sand-700 hover:bg-sand-100")
                     }
                   >
                     {n.label}
                     {n.badge && (
-                      <span className="tnum rounded-full bg-amber-acc/10 px-2 py-0.5 text-[11px] font-bold text-amber-acc">
+                      <span className="tnum rounded-full bg-tile-apricot px-2 py-0.5 text-[11px] font-bold text-tile-apricot-ink">
                         {n.badge}
                       </span>
                     )}

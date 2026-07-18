@@ -50,7 +50,14 @@ export default function Cockpit() {
         </p>
       )}
 
-      <section className="overflow-x-auto rounded-2xl border border-sand-200 bg-white shadow-sm">
+      {zeilen && zeilen.length === 0 ? (
+        <section className="tile tile-mint p-8 text-center">
+          <p className="text-[14px] font-bold text-tile-mint-ink">
+            Noch keine Mandate — laden Sie Ihr erstes Unternehmen ein.
+          </p>
+        </section>
+      ) : (
+      <section className="tile overflow-x-auto">
         <table className="w-full min-w-[720px] text-[13.5px]">
           <thead>
             <tr className="border-b border-sand-100 text-left text-[11px] font-semibold uppercase tracking-wider text-sand-500">
@@ -70,11 +77,11 @@ export default function Cockpit() {
                   {z.anker_ok == null ? (
                     <span className="text-sand-400">—</span>
                   ) : z.anker_ok ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-status-good-bg px-2.5 py-1 text-[12px] font-semibold text-status-good">
+                    <span className="chip chip-mint inline-flex items-center gap-1.5">
                       ✓ {z.anker_monat ? MONATE[z.anker_monat - 1] : ""} Cent-genau
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-status-crit-bg px-2.5 py-1 text-[12px] font-semibold text-status-crit">
+                    <span className="chip inline-flex items-center gap-1.5 bg-status-crit-bg text-status-crit">
                       Δ Abweichung
                     </span>
                   )}
@@ -100,7 +107,7 @@ export default function Cockpit() {
                 </td>
                 <td className="tnum px-3 py-4 text-right">
                   {z.rueckfragen_offen > 0 ? (
-                    <span className="rounded-full bg-status-warn-bg px-2.5 py-1 text-[12px] font-bold text-status-warn">
+                    <span className="chip chip-apricot">
                       {z.rueckfragen_offen}
                     </span>
                   ) : (
@@ -111,23 +118,17 @@ export default function Cockpit() {
                   <button
                     type="button"
                     onClick={() => oeffnen(z)}
-                    className="rounded-lg border border-sand-300 px-3 py-1.5 text-[12px] font-semibold text-sand-700 transition hover:border-brand-600 hover:text-brand-700"
+                    className="knopf knopf-kontur px-4 py-1.5 text-[12px]"
                   >
                     Mandat öffnen
                   </button>
                 </td>
               </tr>
             ))}
-            {zeilen && zeilen.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-5 py-8 text-center text-sand-500">
-                  Noch keine Mandate — laden Sie Ihr erstes Unternehmen ein.
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
       </section>
+      )}
     </main>
   );
 }

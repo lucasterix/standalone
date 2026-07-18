@@ -1,7 +1,9 @@
 "use client";
 
 /* Echte App-Shell (/app): Login-Guard, Identität aus /auth/ich,
-   Sidebar mit echten Routen. Statisch exportiert — alles client-seitig. */
+   Sidebar mit echten Routen. Statisch exportiert — alles client-seitig.
+   Look: Bento 2.0 (docs/DESIGN-BENTO.md) — schwebende Sidebar-Kachel,
+   leichter Header mit Firmen-Pill + Initialen-Kreis. */
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -43,6 +45,15 @@ export default function AppLayout({
 
   const org = ich?.orgs.find((o) => o.org_id === getOrgId()) ?? ich?.orgs[0];
   const istKanzlei = ich?.orgs.some((o) => o.art === "kanzlei");
+  const initialen = ich
+    ? ich.name
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((w) => w[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+    : "";
 
   async function abmelden() {
     try {
@@ -55,8 +66,11 @@ export default function AppLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-sand-100/50">
-      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-sand-200 bg-white px-4 py-5 md:flex">
+    <div
+      className="flex min-h-screen bg-bento-bg"
+      style={{ fontFeatureSettings: '"tnum"' }}
+    >
+      <aside className="tile sticky top-4 m-4 hidden h-[calc(100vh-2rem)] w-60 shrink-0 flex-col px-4 py-5 md:flex">
         <Link href="/" className="flex items-baseline gap-1.5 px-2">
           <span
             aria-hidden
@@ -64,7 +78,7 @@ export default function AppLayout({
           >
             <span className="absolute inset-[3.5px] rounded-full bg-white" />
           </span>
-          <span className="font-display text-lg font-semibold text-sand-900">
+          <span className="font-display text-lg font-semibold text-ink">
             {BRAND.name}
           </span>
         </Link>
@@ -79,10 +93,10 @@ export default function AppLayout({
                 key={n.href}
                 href={n.href}
                 className={
-                  "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[14px] font-medium transition " +
+                  "flex items-center gap-2.5 rounded-full px-4 py-2.5 text-[14px] transition " +
                   (aktiv
-                    ? "bg-brand-50 text-brand-800"
-                    : "text-sand-600 hover:bg-sand-100 hover:text-sand-900")
+                    ? "bg-brand-50 font-semibold text-brand-800"
+                    : "font-medium text-ink-soft hover:bg-[#f7f5f1] hover:text-ink")
                 }
               >
                 <span aria-hidden className="w-4 text-center text-[15px]">
@@ -96,10 +110,10 @@ export default function AppLayout({
             <Link
               href="/app/kanzlei"
               className={
-                "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-[14px] font-medium transition " +
+                "flex items-center gap-2.5 rounded-full px-4 py-2.5 text-[14px] transition " +
                 (pathname.startsWith("/app/kanzlei")
-                  ? "bg-brand-50 text-brand-800"
-                  : "text-sand-600 hover:bg-sand-100 hover:text-sand-900")
+                  ? "bg-brand-50 font-semibold text-brand-800"
+                  : "font-medium text-ink-soft hover:bg-[#f7f5f1] hover:text-ink")
               }
             >
               <span aria-hidden className="w-4 text-center text-[15px]">
@@ -112,19 +126,25 @@ export default function AppLayout({
         <button
           type="button"
           onClick={abmelden}
-          className="rounded-xl border border-sand-200 px-3 py-2 text-[13px] font-semibold text-sand-600 transition hover:border-sand-300 hover:text-sand-900"
+          className="knopf knopf-kontur px-4 py-2 text-[13px]"
         >
           Abmelden
         </button>
       </aside>
 
       <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-sand-200 bg-white/85 px-4 backdrop-blur sm:px-6">
-          <p className="truncate font-semibold text-sand-900">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between bg-bento-bg/80 px-4 backdrop-blur sm:px-6">
+          <p className="truncate rounded-full bg-white px-4 py-2 text-[13px] font-semibold text-ink shadow-sm">
             {org?.name ?? "…"}
           </p>
           {ich && (
-            <span className="text-[13px] text-sand-600">{ich.name}</span>
+            <span
+              title={ich.name}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-900 text-[13px] font-bold text-white"
+            >
+              <span aria-hidden>{initialen}</span>
+              <span className="sr-only">{ich.name}</span>
+            </span>
           )}
         </header>
         {children}

@@ -2,7 +2,8 @@
 
 /* Bank-Import — ECHT: CSV-Datei hochladen → Import + Kontierung + Autopilot
    laufen serverseitig in einem Zug. Das Ergebnis („X automatisch gebucht")
-   ist der Magic Moment aus dem Onboarding — hier mit echten Zahlen. */
+   ist der Magic Moment aus dem Onboarding — hier mit echten Zahlen.
+   Look: Bento 2.0 (docs/DESIGN-BENTO.md) — Dropzone-Kachel + Mini-Kacheln. */
 
 import Link from "next/link";
 import { useRef, useState } from "react";
@@ -32,12 +33,15 @@ export default function BankImport() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl space-y-5 px-6 py-7">
+    <main
+      className="mx-auto max-w-3xl space-y-5 px-6 py-7"
+      style={{ fontFeatureSettings: '"tnum"' }}
+    >
       <div>
-        <h1 className="font-display text-2xl font-semibold text-sand-900">
+        <h1 className="font-display text-2xl font-semibold text-ink">
           Bank-Import
         </h1>
-        <p className="mt-1 text-[14px] text-sand-600">
+        <p className="mt-1 text-[14px] text-ink-soft">
           CSV-Export aus dem Online-Banking (Sparkasse, VR, comdirect …)
           hochladen — bereits importierte Umsätze werden automatisch erkannt
           und übersprungen, doppelt geht nichts.
@@ -56,22 +60,26 @@ export default function BankImport() {
           if (f) hochladen(f);
         }}
         disabled={laedt}
-        className={
-          "block w-full rounded-3xl border-2 border-dashed px-8 py-14 text-center transition " +
-          (ziehen
-            ? "border-brand-600 bg-brand-50"
-            : "border-sand-300 bg-white hover:border-brand-400 hover:bg-brand-50/40")
-        }
+        className="tile block w-full p-3 text-left transition"
       >
-        <span aria-hidden className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-xl text-brand-700">
-          ⇣
+        <span
+          className={
+            "block rounded-[20px] border-2 border-dashed px-8 py-14 text-center transition " +
+            (ziehen
+              ? "border-brand-600 bg-brand-50"
+              : "border-sand-300 hover:border-brand-400 hover:bg-brand-50/40")
+          }
+        >
+          <span aria-hidden className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-xl text-brand-700">
+            ⇣
+          </span>
+          <span className="mt-3 block text-[15px] font-semibold text-ink">
+            {laedt ? "Verarbeite …" : "CSV hierher ziehen oder klicken"}
+          </span>
+          <span className="mt-1 block text-[13px] text-ink-soft">
+            Kontoumsätze als CSV, max. 10 MB
+          </span>
         </span>
-        <p className="mt-3 text-[15px] font-semibold text-sand-900">
-          {laedt ? "Verarbeite …" : "CSV hierher ziehen oder klicken"}
-        </p>
-        <p className="mt-1 text-[13px] text-sand-500">
-          Kontoumsätze als CSV, max. 10 MB
-        </p>
       </button>
       <input
         ref={inputRef}
@@ -86,44 +94,48 @@ export default function BankImport() {
       />
 
       {fehler && (
-        <p className="rounded-xl bg-status-crit-bg px-4 py-3 text-[13px] font-medium text-status-crit">
+        <p className="rounded-2xl bg-status-crit-bg px-4 py-3 text-[13px] font-medium text-status-crit">
           {fehler}
         </p>
       )}
 
       {ergebnis && (
-        <section className="rise rounded-3xl border border-brand-200 bg-white p-7 shadow-sm">
-          <p className="flex items-center gap-2 text-[15px] font-bold text-sand-900">
+        <section className="rise space-y-4">
+          <p className="flex items-center gap-2 text-[15px] font-bold text-ink">
             <span aria-hidden className="flex h-7 w-7 items-center justify-center rounded-full bg-status-good-bg text-status-good">✓</span>
             Import fertig — der Autopilot hat direkt mitgearbeitet.
           </p>
-          <dl className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {[
-              { wert: ergebnis.neu, label: "Umsätze neu" },
-              { wert: ergebnis.uebersprungen, label: "schon bekannt" },
-              { wert: ergebnis.auto_gebucht, label: "automatisch gebucht", gut: true },
-              { wert: ergebnis.vorgeschlagen - ergebnis.auto_gebucht, label: "zur Prüfung" },
+              { wert: ergebnis.neu, label: "Umsätze neu",
+                kachel: "tile", dt: "text-ink-soft", dd: "text-ink" },
+              { wert: ergebnis.uebersprungen, label: "schon bekannt",
+                kachel: "tile", dt: "text-ink-soft", dd: "text-ink" },
+              { wert: ergebnis.auto_gebucht, label: "automatisch gebucht",
+                kachel: "tile tile-mint", dt: "text-tile-mint-ink", dd: "text-tile-mint-deep" },
+              { wert: ergebnis.vorgeschlagen - ergebnis.auto_gebucht, label: "zur Prüfung",
+                kachel: "tile tile-apricot", dt: "text-tile-apricot-ink", dd: "text-tile-apricot-ink" },
             ].map((k) => (
-              <div key={k.label} className="rounded-2xl bg-sand-50 px-4 py-3.5">
-                <dt className="text-[11px] font-semibold uppercase tracking-wider text-sand-500">
+              <div key={k.label} className={k.kachel + " p-5"}>
+                <dt className={"text-[11px] font-semibold uppercase tracking-wider " + k.dt}>
                   {k.label}
                 </dt>
-                <dd className={"tnum mt-1 text-2xl font-bold " + (k.gut ? "text-status-good" : "text-sand-900")}>
+                <dd className={"zahl-hero mt-2 text-3xl " + k.dd}>
                   {k.wert}
                 </dd>
               </div>
             ))}
           </dl>
-          <div className="mt-6 flex flex-wrap gap-2.5">
+          <div className="flex flex-wrap gap-2.5">
             <Link
               href="/app/pruefliste/"
-              className="rounded-xl bg-brand-700 px-5 py-2.5 text-[13.5px] font-semibold text-white transition hover:bg-brand-800"
+              className="knopf knopf-primaer px-6 py-2.5 text-[13.5px]"
             >
               Zur Prüfliste
             </Link>
             <Link
               href="/app/"
-              className="rounded-xl border border-sand-300 px-5 py-2.5 text-[13.5px] font-semibold text-sand-700 transition hover:border-brand-600 hover:text-brand-700"
+              className="knopf knopf-kontur px-5 py-2.5 text-[13.5px]"
             >
               Zur Übersicht
             </Link>

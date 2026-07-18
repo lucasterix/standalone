@@ -51,7 +51,7 @@ export default function DatevSeite() {
       </div>
 
       {/* Stapel-Tabelle */}
-      <section className="overflow-x-auto rounded-2xl border border-sand-200 bg-white shadow-sm">
+      <section className="tile overflow-x-auto">
         <table className="w-full min-w-[760px] text-[13.5px]">
           <thead>
             <tr className="border-b border-sand-100 text-left text-[11px] font-semibold uppercase tracking-wider text-sand-500">
@@ -87,13 +87,13 @@ export default function DatevSeite() {
                     <div className="inline-flex gap-2">
                       <button
                         type="button"
-                        className="rounded-xl bg-brand-700 px-3.5 py-2 text-[12.5px] font-semibold text-white transition hover:bg-brand-800"
+                        className="knopf bg-tile-rose-ink px-3.5 py-2 text-[12.5px] text-white transition hover:opacity-90"
                       >
                         Als Entwurf senden
                       </button>
                       <button
                         type="button"
-                        className="rounded-xl border border-sand-300 px-3.5 py-2 text-[12.5px] font-semibold text-sand-700 transition hover:border-sand-400"
+                        className="knopf knopf-kontur px-3.5 py-2 text-[12.5px]"
                         title="DATEV-Format-Datei für den Import in der Kanzlei"
                       >
                         Export (EXTF)
@@ -112,11 +112,11 @@ export default function DatevSeite() {
       </section>
 
       <div className="grid gap-5 md:grid-cols-2">
-        <section className="rounded-2xl border border-sand-200 bg-white p-6 shadow-sm">
-          <h2 className="font-semibold text-sand-900">
+        <section className="tile tile-rose p-6">
+          <h2 className="text-[14px] font-bold text-tile-rose-ink">
             Warum „Zahllast 0,00 €"?
           </h2>
-          <p className="mt-2 text-[13.5px] leading-relaxed text-sand-700">
+          <p className="mt-2 text-[13.5px] leading-relaxed text-ink">
             Pflegeleistungen sind nach <strong>§ 4 Nr. 16 UStG</strong>{" "}
             umsatzsteuerfrei — gebucht wird brutto, ohne Vorsteuerabzug
             (§ 15 Abs. 2). Steuerpflichtige Ausnahmen (z. B. Kiosk,
@@ -124,8 +124,8 @@ export default function DatevSeite() {
             erscheinen dann hier.
           </p>
         </section>
-        <section className="rounded-2xl border border-sand-200 bg-white p-6 shadow-sm">
-          <h2 className="font-semibold text-sand-900">Zwei Wege zur Kanzlei</h2>
+        <section className="tile p-6">
+          <h2 className="text-[14px] font-bold text-ink">Zwei Wege zur Kanzlei</h2>
           <ul className="mt-2 space-y-2 text-[13.5px] leading-relaxed text-sand-700">
             <li className="flex gap-2">
               <span aria-hidden className="text-brand-600">

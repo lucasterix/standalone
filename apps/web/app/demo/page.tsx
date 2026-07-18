@@ -10,11 +10,20 @@ const MONATE = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", 
 
 /* ---------- Kopf-Kacheln (Hero-Zahlen) ---------- */
 function StatTiles() {
-  const tiles = [
+  const tiles: Array<{
+    label: string;
+    wert: string;
+    sub: string;
+    hero?: boolean;
+    warn?: boolean;
+    good?: boolean;
+    rose?: boolean;
+  }> = [
     {
       label: "Automatisch erledigt",
       wert: "87 %",
       sub: "641 von 737 Buchungen im Juni",
+      hero: true,
     },
     {
       label: "Zur Prüfung",
@@ -32,6 +41,7 @@ function StatTiles() {
       label: "DATEV-Stapel Juni",
       wert: "bereit",
       sub: "1.204 Sätze · als Entwurf senden",
+      rose: true,
     },
   ];
   return (
@@ -39,19 +49,41 @@ function StatTiles() {
       {tiles.map((t) => (
         <div
           key={t.label}
-          className="rounded-2xl border border-sand-200 bg-white p-5 shadow-sm"
+          className={
+            "p-5 " +
+            (t.hero
+              ? "tile-hero"
+              : t.good
+                ? "tile tile-mint"
+                : t.rose
+                  ? "tile tile-rose"
+                  : "tile")
+          }
         >
-          <p className="text-[12px] font-semibold uppercase tracking-wider text-sand-500">
+          <p
+            className={
+              "text-[12px] font-bold uppercase tracking-wider " +
+              (t.hero
+                ? "text-teal-100"
+                : t.good
+                  ? "text-tile-mint-ink"
+                  : t.rose
+                    ? "text-tile-rose-ink"
+                    : "text-sand-500")
+            }
+          >
             {t.label}
           </p>
           <p
             className={
-              "tnum font-display mt-2 text-3xl font-bold " +
-              (t.good
-                ? "text-status-good"
-                : t.warn
-                  ? "text-amber-acc"
-                  : "text-sand-900")
+              "tnum zahl-hero mt-2 text-3xl " +
+              (t.hero
+                ? "text-white"
+                : t.good
+                  ? "text-status-good"
+                  : t.warn
+                    ? "text-amber-acc"
+                    : "text-ink")
             }
           >
             {t.good && (
@@ -61,7 +93,20 @@ function StatTiles() {
             )}
             {t.wert}
           </p>
-          <p className="mt-1 text-[13px] text-sand-600">{t.sub}</p>
+          <p
+            className={
+              "mt-1 text-[13px] " +
+              (t.hero
+                ? "text-teal-50"
+                : t.good
+                  ? "text-tile-mint-ink"
+                  : t.rose
+                    ? "text-tile-rose-ink"
+                    : "text-sand-600")
+            }
+          >
+            {t.sub}
+          </p>
         </div>
       ))}
     </div>
@@ -75,17 +120,17 @@ function SaldoLeiste() {
     "leer", "leer", "leer", "leer", "leer",
   ];
   return (
-    <section className="rounded-2xl border border-sand-200 bg-white p-6 shadow-sm">
+    <section className="tile tile-mint p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="font-semibold text-sand-900">
+          <h2 className="text-[14px] font-bold text-tile-mint-ink">
             Cent-Anker · Saldenabgleich 2026
           </h2>
-          <p className="mt-0.5 text-[13px] text-sand-600">
+          <p className="mt-0.5 text-[13px] text-tile-mint-ink/80">
             Bank ↔ Buchhaltung, je Monat auf den Cent geprüft
           </p>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-status-good-bg px-3 py-1 text-[12px] font-semibold text-status-good">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-[12px] font-semibold text-status-good">
           ✓ Alle geprüften Monate Cent-genau
         </span>
       </div>
@@ -96,12 +141,12 @@ function SaldoLeiste() {
             <div
               key={m}
               className={
-                "group relative rounded-xl border px-2 py-3 text-center transition " +
+                "group relative rounded-2xl px-2 py-3 text-center transition " +
                 (s === "ok"
-                  ? "border-brand-100 bg-brand-50/60"
+                  ? "bg-white shadow-sm"
                   : s === "laufend"
-                    ? "border-sand-300 border-dashed bg-sand-50"
-                    : "border-sand-100 bg-sand-50/40")
+                    ? "border border-dashed border-tile-mint-ink/40 bg-white/60"
+                    : "bg-white/35")
               }
             >
               <p className="text-[11px] font-semibold text-sand-600">{m}</p>
@@ -157,10 +202,10 @@ function AktivitaetChart() {
   const max = Math.max(...wochen.map(([, a, p]) => a + p));
   const H = 132;
   return (
-    <section className="rounded-2xl border border-sand-200 bg-white p-6 shadow-sm">
+    <section className="tile p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="font-semibold text-sand-900">Autopilot-Aktivität</h2>
+          <h2 className="text-[14px] font-bold text-ink">Autopilot-Aktivität</h2>
           <p className="mt-0.5 text-[13px] text-sand-600">
             Buchungen je Kalenderwoche
           </p>
@@ -234,11 +279,11 @@ function KostentraegerListe() {
     { name: "Selbstzahler & Übrige", anteil: 15, betrag: "2.708" },
   ];
   return (
-    <section className="rounded-2xl border border-sand-200 bg-white p-6 shadow-sm">
-      <h2 className="font-semibold text-sand-900">
+    <section className="tile tile-lavender p-6">
+      <h2 className="text-[14px] font-bold text-tile-lavender-ink">
         Einnahmen nach Kostenträger
       </h2>
-      <p className="mt-0.5 text-[13px] text-sand-600">Juni · brutto, in €</p>
+      <p className="mt-0.5 text-[13px] text-tile-lavender-ink/80">Juni · brutto, in €</p>
       <ul className="mt-5 space-y-3.5">
         {rows.map((r) => (
           <li key={r.name} className="group relative">
@@ -250,7 +295,7 @@ function KostentraegerListe() {
                 {r.betrag}&nbsp;€
               </span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-sand-100">
+            <div className="h-2 overflow-hidden rounded-full bg-white/70">
               <div
                 className="h-full rounded-full bg-brand-600 transition group-hover:bg-brand-700"
                 style={{ width: `${r.anteil}%` }}
@@ -259,7 +304,7 @@ function KostentraegerListe() {
           </li>
         ))}
       </ul>
-      <p className="mt-4 text-[12px] text-sand-500">
+      <p className="mt-4 text-[12px] text-tile-lavender-ink/80">
         Zahlungen laufen aufs jeweilige Personenkonto — Erlöse entstehen aus
         den Abrechnungen, nicht aus Schätzungen.
       </p>
@@ -314,17 +359,17 @@ function Pruefliste() {
     },
   ];
   return (
-    <section className="rounded-2xl border border-sand-200 bg-white shadow-sm">
+    <section className="tile overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-sand-100 px-6 py-4">
         <div>
-          <h2 className="font-semibold text-sand-900">
+          <h2 className="text-[14px] font-bold text-ink">
             Prüfliste — Ihre 6 Entscheidungen
           </h2>
           <p className="mt-0.5 text-[13px] text-sand-600">
             Alles andere hat der Autopilot erledigt. Jede Antwort trainiert ihn.
           </p>
         </div>
-        <span className="rounded-full bg-amber-acc/10 px-3 py-1 text-[12px] font-bold text-amber-acc">
+        <span className="chip chip-apricot">
           ≈ 4 Min.
         </span>
       </div>
@@ -351,19 +396,19 @@ function Pruefliste() {
             >
               {it.betrag}&nbsp;€
             </span>
-            <span className="hidden shrink-0 rounded-lg bg-brand-50 px-2.5 py-1 text-[12px] font-semibold text-brand-800 lg:inline">
+            <span className="hidden shrink-0 rounded-full bg-brand-50 px-2.5 py-1 text-[12px] font-semibold text-brand-800 lg:inline">
               {it.vorschlag}
             </span>
             <div className="flex shrink-0 gap-1.5">
               <button
                 type="button"
-                className="rounded-lg bg-brand-700 px-3 py-1.5 text-[12px] font-semibold text-white transition hover:bg-brand-800"
+                className="knopf knopf-primaer px-3.5 py-1.5 text-[12px]"
               >
                 Übernehmen
               </button>
               <button
                 type="button"
-                className="rounded-lg border border-sand-300 px-3 py-1.5 text-[12px] font-semibold text-sand-700 transition hover:border-sand-400"
+                className="knopf knopf-kontur px-3.5 py-1.5 text-[12px]"
               >
                 Ändern
               </button>
@@ -401,8 +446,8 @@ function ProtokollUndDatev() {
   ];
   return (
     <div className="grid gap-5 xl:grid-cols-2">
-      <section className="rounded-2xl border border-sand-200 bg-white p-6 shadow-sm">
-        <h2 className="font-semibold text-sand-900">Autopilot-Protokoll</h2>
+      <section className="tile p-6">
+        <h2 className="text-[14px] font-bold text-ink">Autopilot-Protokoll</h2>
         <p className="mt-0.5 text-[13px] text-sand-600">
           Jede automatische Buchung mit Begründung — und per Klick umkehrbar
         </p>
@@ -424,15 +469,15 @@ function ProtokollUndDatev() {
         </ul>
       </section>
 
-      <section className="flex flex-col rounded-2xl border border-sand-200 bg-white p-6 shadow-sm">
-        <h2 className="font-semibold text-sand-900">DATEV-Übergabe</h2>
-        <p className="mt-0.5 text-[13px] text-sand-600">
+      <section className="tile tile-rose flex flex-col p-6">
+        <h2 className="text-[14px] font-bold text-tile-rose-ink">DATEV-Übergabe</h2>
+        <p className="mt-0.5 text-[13px] text-tile-rose-ink/80">
           Stapel entstehen erst, wenn der Monat Cent-genau ist
         </p>
         <div className="mt-4 flex-1 space-y-2.5">
-          <div className="flex items-center justify-between rounded-xl bg-sand-50 px-4 py-3">
+          <div className="flex items-center justify-between rounded-2xl bg-white/80 px-4 py-3">
             <div>
-              <p className="text-[14px] font-semibold text-sand-900">
+              <p className="text-[14px] font-semibold text-ink">
                 Juni 2026
               </p>
               <p className="tnum text-[12px] text-sand-600">
@@ -441,14 +486,14 @@ function ProtokollUndDatev() {
             </div>
             <button
               type="button"
-              className="rounded-xl bg-brand-700 px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-brand-800"
+              className="knopf bg-tile-rose-ink px-4 py-2 text-[13px] text-white transition hover:opacity-90"
             >
               Als Entwurf senden
             </button>
           </div>
-          <div className="flex items-center justify-between rounded-xl bg-sand-50 px-4 py-3">
+          <div className="flex items-center justify-between rounded-2xl bg-white/80 px-4 py-3">
             <div>
-              <p className="text-[14px] font-semibold text-sand-900">
+              <p className="text-[14px] font-semibold text-ink">
                 Mai 2026
               </p>
               <p className="tnum text-[12px] text-sand-600">
@@ -460,7 +505,7 @@ function ProtokollUndDatev() {
             </span>
           </div>
         </div>
-        <p className="mt-4 text-[12px] leading-relaxed text-sand-500">
+        <p className="mt-4 text-[12px] leading-relaxed text-tile-rose-ink/80">
           Ihre Steuerkanzlei erhält prüfbare Entwürfe — nichts wird ohne sie
           festgeschrieben.
         </p>

@@ -12,7 +12,7 @@ import { BRAND } from "@/lib/brand";
 type Antwort = { user_id: number; org_id: number | null };
 
 const FELD =
-  "mt-1.5 w-full rounded-xl border border-sand-300 px-4 py-3 text-[15px] focus:border-brand-600 focus:outline-none";
+  "mt-1.5 w-full rounded-2xl border border-sand-300 bg-white px-4 py-3 text-[15px] focus:border-brand-600 focus:outline-none";
 
 export default function Registrieren() {
   const router = useRouter();
@@ -63,7 +63,7 @@ export default function Registrieren() {
         </div>
         <form
           onSubmit={absenden}
-          className="rise rounded-3xl border border-sand-200 bg-white p-8 shadow-[0_24px_60px_-30px_rgba(19,78,74,0.25)]"
+          className="rise tile rounded-[28px] p-8"
         >
           <h1 className="font-display text-xl font-semibold text-sand-900">
             Kostenlos starten
@@ -111,7 +111,7 @@ export default function Registrieren() {
           <button
             type="submit"
             disabled={laedt}
-            className="mt-6 w-full rounded-2xl bg-brand-700 py-3.5 text-[15px] font-semibold text-white shadow-md shadow-brand-700/20 transition hover:bg-brand-800 disabled:opacity-50"
+            className="knopf knopf-primaer mt-6 w-full py-3.5 text-[15px] disabled:opacity-50"
           >
             {laedt ? "Lege an …" : "Konto anlegen"}
           </button>

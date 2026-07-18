@@ -10,8 +10,8 @@ export default function DemoLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div className="flex min-h-screen bg-sand-100/50">
-      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-sand-200 bg-white px-4 py-5 md:flex">
+    <div className="flex min-h-screen bg-bento-bg">
+      <aside className="tile sticky top-4 m-4 hidden h-[calc(100vh-2rem)] w-60 shrink-0 flex-col px-4 py-5 md:flex">
         <Link href="/" className="flex items-baseline gap-1.5 px-2">
           <span
             aria-hidden
@@ -26,22 +26,22 @@ export default function DemoLayout({
 
         <SideNav />
 
-        <div className="rounded-2xl border border-dashed border-brand-300 bg-brand-50/60 px-3.5 py-3 text-[12px] leading-relaxed text-brand-900">
+        <div className="rounded-2xl bg-tile-mint/70 px-3.5 py-3 text-[12px] leading-relaxed text-tile-mint-ink">
           <p className="font-bold">Demo-Modus</p>
-          <p className="mt-0.5 text-brand-800/80">
+          <p className="mt-0.5 text-tile-mint-ink/80">
             Prototyp mit Beispieldaten eines fiktiven Pflegedienstes.
           </p>
         </div>
       </aside>
 
       <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-sand-200 bg-white/85 px-4 backdrop-blur sm:px-6">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between bg-bento-bg/85 px-4 backdrop-blur sm:px-6">
           <div className="flex items-center gap-3">
             <MobileNav />
             <p className="truncate font-semibold text-sand-900">
               Pflegedienst Sonnenweg GmbH
             </p>
-            <span className="rounded-lg border border-sand-200 bg-sand-50 px-2.5 py-1 text-[12px] font-semibold text-sand-600">
+            <span className="rounded-full bg-white px-3 py-1 text-[12px] font-semibold text-sand-600 shadow-sm">
               WJ 2026
             </span>
           </div>

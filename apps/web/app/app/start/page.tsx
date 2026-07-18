@@ -44,18 +44,19 @@ export default function Start() {
     }
   }
 
-  const KNOPF = "rounded-2xl bg-brand-700 px-6 py-3 text-[14.5px] font-semibold text-white shadow-md shadow-brand-700/20 transition hover:bg-brand-800";
+  const KNOPF = "knopf knopf-primaer px-6 py-3 text-[14.5px]";
   const LEISE = "text-[13px] font-semibold text-sand-500 underline-offset-2 hover:underline";
 
   return (
-    <main className="mx-auto max-w-2xl px-6 py-10">
+    <main className="min-h-screen bg-bento-bg px-6 py-10">
+      <div className="mx-auto max-w-2xl">
       {/* Fortschritt */}
       <div className="mb-8 flex items-center gap-2">
         {[0, 1, 2].map((i) => (
           <span
             key={i}
             className={
-              "h-1.5 flex-1 rounded-full transition " +
+              "h-2 flex-1 rounded-full transition " +
               (i <= schritt ? "bg-brand-600" : "bg-sand-200")
             }
           />
@@ -80,7 +81,7 @@ export default function Start() {
               onClick={() => setKostentraeger(!kostentraeger)}
               aria-pressed={kostentraeger}
               className={
-                "block w-full rounded-2xl border-2 p-5 text-left transition " +
+                "block w-full rounded-[24px] border-2 p-5 text-left transition " +
                 (kostentraeger ? "border-brand-600 bg-brand-50/60" : "border-sand-200 bg-white")
               }
             >
@@ -97,7 +98,7 @@ export default function Start() {
               onClick={() => setPersonal(!personal)}
               aria-pressed={personal}
               className={
-                "block w-full rounded-2xl border-2 p-5 text-left transition " +
+                "block w-full rounded-[24px] border-2 p-5 text-left transition " +
                 (personal ? "border-brand-600 bg-brand-50/60" : "border-sand-200 bg-white")
               }
             >
@@ -132,7 +133,7 @@ export default function Start() {
                 onClick={() => setStufe(s.key)}
                 aria-pressed={stufe === s.key}
                 className={
-                  "block w-full rounded-2xl border-2 p-5 text-left transition " +
+                  "block w-full rounded-[24px] border-2 p-5 text-left transition " +
                   (stufe === s.key ? "border-brand-600 bg-brand-50/60" : "border-sand-200 bg-white")
                 }
               >
@@ -169,7 +170,7 @@ export default function Start() {
                 value={berater}
                 onChange={(e) => setBerater(e.target.value)}
                 placeholder="z. B. 1694291"
-                className="tnum mt-1.5 w-44 rounded-xl border border-sand-300 px-4 py-3 text-[15px] focus:border-brand-600 focus:outline-none"
+                className="tnum mt-1.5 w-44 rounded-2xl border border-sand-300 bg-white px-4 py-3 text-[15px] focus:border-brand-600 focus:outline-none"
               />
             </label>
             <label>
@@ -178,7 +179,7 @@ export default function Start() {
                 value={mandant}
                 onChange={(e) => setMandant(e.target.value)}
                 placeholder="z. B. 10357"
-                className="tnum mt-1.5 w-44 rounded-xl border border-sand-300 px-4 py-3 text-[15px] focus:border-brand-600 focus:outline-none"
+                className="tnum mt-1.5 w-44 rounded-2xl border border-sand-300 bg-white px-4 py-3 text-[15px] focus:border-brand-600 focus:outline-none"
               />
             </label>
           </div>
@@ -192,6 +193,7 @@ export default function Start() {
           </div>
         </section>
       )}
+      </div>
     </main>
   );
 }

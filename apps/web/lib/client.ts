@@ -172,3 +172,17 @@ export type ImportErgebnis = {
   vorgeschlagen: number;
   auto_gebucht: number;
 };
+
+/* Deutsche Formate — EINE Wahrheit für alle Seiten (Bento-Spec §2). */
+export function euro(betrag: string | number): string {
+  const n = typeof betrag === "number" ? betrag : Number(betrag);
+  if (!Number.isFinite(n)) return String(betrag);
+  return n.toLocaleString("de-DE", {
+    minimumFractionDigits: 2, maximumFractionDigits: 2,
+  }) + " €";
+}
+
+export function datumKurz(iso: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso ?? "");
+  return m ? `${m[3]}.${m[2]}.${m[1].slice(2)}` : iso;
+}

@@ -27,9 +27,9 @@ export default function SideNav() {
             href={n.href}
             aria-current={aktiv ? "page" : undefined}
             className={
-              "flex items-center justify-between rounded-xl px-3 py-2.5 text-[14px] font-medium transition " +
+              "flex items-center justify-between rounded-full px-4 py-2.5 text-[14px] font-medium transition " +
               (aktiv
-                ? "bg-brand-50 text-brand-800"
+                ? "bg-brand-700 font-semibold text-white shadow-sm"
                 : "text-sand-600 hover:bg-sand-100 hover:text-sand-900")
             }
           >
@@ -40,7 +40,7 @@ export default function SideNav() {
               {n.label}
             </span>
             {n.badge && (
-              <span className="tnum rounded-full bg-amber-acc/10 px-2 py-0.5 text-[11px] font-bold text-amber-acc">
+              <span className="tnum rounded-full bg-tile-apricot px-2 py-0.5 text-[11px] font-bold text-tile-apricot-ink">
                 {n.badge}
               </span>
             )}

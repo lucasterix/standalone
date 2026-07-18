@@ -43,9 +43,9 @@ const STUFEN = [
   },
 ];
 
-const KARTE = "rounded-2xl border border-sand-200 bg-white p-6 shadow-sm";
+const KARTE = "tile p-6";
 const H2 = "font-display text-lg font-semibold text-sand-900";
-const FELD = "tnum mt-1.5 w-28 rounded-xl border border-sand-300 bg-white px-3 py-2 text-[14px] font-semibold focus:border-brand-600 focus:outline-none";
+const FELD = "tnum mt-1.5 w-28 rounded-2xl border border-sand-300 bg-white px-3 py-2 text-[14px] font-semibold focus:border-brand-600 focus:outline-none";
 
 export default function EinstellungenSeite() {
   const [est, setEst] = useState<Einstellungen | null>(null);
@@ -143,7 +143,7 @@ export default function EinstellungenSeite() {
                 onClick={() => speichern({ autopilot_stufe: s.key }, `Autopilot: ${s.name}.`)}
                 aria-pressed={aktiv}
                 className={
-                  "rounded-2xl border-2 p-4 text-left transition " +
+                  "rounded-[20px] border-2 p-4 text-left transition " +
                   (aktiv
                     ? "border-brand-600 bg-brand-50/60"
                     : "border-sand-200 bg-white hover:border-brand-300")
@@ -168,8 +168,8 @@ export default function EinstellungenSeite() {
           })}
         </div>
         {sim && est && (sim.stufen[est.autopilot_stufe] ?? 0) > 0 && (
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50/70 px-4 py-3">
-            <p className="text-[13.5px] text-brand-900">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[20px] bg-tile-mint px-4 py-3">
+            <p className="text-[13.5px] text-tile-mint-ink">
               Die Stufe <strong>{STUFEN.find((s) => s.key === est.autopilot_stufe)?.name}</strong>{" "}
               würde <strong className="tnum">{sim.stufen[est.autopilot_stufe]}</strong> der{" "}
               <span className="tnum">{sim.offen}</span> offenen Fälle sofort buchen.
@@ -177,7 +177,7 @@ export default function EinstellungenSeite() {
             <button
               type="button"
               onClick={nachbuchen}
-              className="rounded-xl bg-brand-700 px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-brand-800"
+              className="knopf knopf-primaer px-5 py-2 text-[13px]"
             >
               Jetzt nachbuchen
             </button>
@@ -190,7 +190,7 @@ export default function EinstellungenSeite() {
           <button
             type="button"
             onClick={notAus}
-            className="shrink-0 rounded-xl border border-sand-300 px-4 py-2 text-[12.5px] font-semibold text-sand-700 transition hover:border-status-crit hover:text-status-crit"
+            className="knopf knopf-kontur shrink-0 px-5 py-2 text-[12.5px]"
           >
             Not-Aus: letzten Lauf zurückholen
           </button>
@@ -276,65 +276,62 @@ export default function EinstellungenSeite() {
       </section>
 
       {/* Partner-Regeln */}
-      <section className={KARTE}>
-        <div className="flex items-baseline justify-between">
-          <h2 className={H2}>Partner-Regeln</h2>
-          <p className="text-[12.5px] text-sand-500">
+      <section className="tile tile-lavender p-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-[14px] font-bold text-tile-lavender-ink">Partner-Regeln</h2>
+          <p className="text-[12.5px] font-medium text-tile-lavender-ink/80">
             Entstehen aus „künftig immer so buchen" in der Prüfliste
           </p>
         </div>
         {regeln && regeln.length > 0 ? (
-          <div className="mt-3 overflow-x-auto">
-            <table className="w-full min-w-[560px] text-[13.5px]">
-              <thead>
-                <tr className="border-b border-sand-100 text-left text-[11px] font-semibold uppercase tracking-wider text-sand-500">
-                  <th className="py-2.5 pr-3">Partner</th>
-                  <th className="px-3 py-2.5">Konto</th>
-                  <th className="px-3 py-2.5 text-right">Hat erledigt</th>
-                  <th className="py-2.5 pl-3 text-right">Aktiv</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-sand-100">
-                {regeln.map((r) => (
-                  <tr key={r.id} className={r.aktiv ? "" : "opacity-50"}>
-                    <td className="py-3 pr-3 font-semibold text-sand-900">
-                      {r.partner}
-                      <span className="tnum ml-2 text-[11.5px] font-normal text-sand-500">{r.partner_nr}</span>
-                    </td>
-                    <td className="tnum px-3 py-3 text-sand-700">{r.konto}</td>
-                    <td className="tnum px-3 py-3 text-right text-sand-700">
-                      {r.gebucht > 0 ? `${r.gebucht.toLocaleString("de-DE")} Buchungen` : "—"}
-                    </td>
-                    <td className="py-3 pl-3 text-right">
-                      <input
-                        type="checkbox"
-                        checked={r.aktiv}
-                        onChange={() => regelToggle(r)}
-                        className="h-4.5 w-4.5 accent-[var(--color-brand-700)]"
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="mt-4 space-y-2.5">
+            {regeln.map((r) => (
+              <div
+                key={r.id}
+                className={
+                  "zeile-soft flex flex-wrap items-center justify-between gap-3 bg-white! px-4 py-3 " +
+                  (r.aktiv ? "" : "opacity-50")
+                }
+              >
+                <div>
+                  <p className="text-[13.5px] font-semibold text-ink">
+                    {r.partner}
+                    <span className="tnum ml-2 text-[11.5px] font-normal text-ink-soft">{r.partner_nr}</span>
+                  </p>
+                  <p className="tnum mt-0.5 text-[12px] text-ink-soft">
+                    Konto {r.konto} · Hat erledigt:{" "}
+                    {r.gebucht > 0 ? `${r.gebucht.toLocaleString("de-DE")} Buchungen` : "—"}
+                  </p>
+                </div>
+                <label className="flex items-center gap-2 text-[12px] font-semibold text-ink-soft">
+                  Aktiv
+                  <input
+                    type="checkbox"
+                    checked={r.aktiv}
+                    onChange={() => regelToggle(r)}
+                    className="h-4.5 w-4.5 accent-[var(--color-brand-700)]"
+                  />
+                </label>
+              </div>
+            ))}
           </div>
         ) : (
-          <p className="mt-3 text-[13px] text-sand-500">
+          <p className="mt-3 text-[13px] font-medium text-tile-lavender-ink/80">
             Noch keine Regeln — bestätigen Sie in der Prüfliste mit „künftig immer so buchen".
           </p>
         )}
       </section>
 
       {/* DATEV-Stammdaten */}
-      <section className={KARTE}>
-        <h2 className={H2}>DATEV-Stammdaten</h2>
-        <p className="mt-1 text-[12.5px] text-sand-600">
+      <section className="tile tile-rose p-6">
+        <h2 className="text-[14px] font-bold text-tile-rose-ink">DATEV-Stammdaten</h2>
+        <p className="mt-1 text-[12.5px] font-medium text-tile-rose-ink/80">
           Stehen im Kopf jeder EXTF-Datei — Ihre Kanzlei nennt Ihnen beide Nummern.
           Kontenrahmen: <strong>{est.chart.toUpperCase()}</strong>.
         </p>
         <div className="mt-3 flex flex-wrap gap-6">
           <label>
-            <span className="block text-[13px] font-semibold text-sand-700">Berater-Nr.</span>
+            <span className="block text-[13px] font-semibold text-tile-rose-ink">Berater-Nr.</span>
             <input
               defaultValue={est.datev_berater_nr ?? ""}
               onBlur={(e) => {
@@ -345,7 +342,7 @@ export default function EinstellungenSeite() {
             />
           </label>
           <label>
-            <span className="block text-[13px] font-semibold text-sand-700">Mandanten-Nr.</span>
+            <span className="block text-[13px] font-semibold text-tile-rose-ink">Mandanten-Nr.</span>
             <input
               defaultValue={est.datev_mandant_nr ?? ""}
               onBlur={(e) => {

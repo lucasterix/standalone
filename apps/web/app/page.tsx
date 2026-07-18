@@ -14,7 +14,7 @@ function Wordmark({ dark = false }: { dark?: boolean }) {
         aria-hidden
         className="relative top-[1px] inline-block h-3.5 w-3.5 rounded-[5px] bg-brand-600"
       >
-        <span className="absolute inset-[3.5px] rounded-full bg-sand-50" />
+        <span className="absolute inset-[3.5px] rounded-full bg-bento-bg" />
       </span>
       <span
         className={`font-display text-xl font-semibold ${dark ? "text-sand-50" : "text-sand-900"}`}
@@ -27,7 +27,7 @@ function Wordmark({ dark = false }: { dark?: boolean }) {
 
 function Nav() {
   return (
-    <header className="sticky top-0 z-40 border-b border-sand-200/70 bg-sand-50/85 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-sand-200/70 bg-bento-bg/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
         <Link href="/" aria-label={`${BRAND.name} — Start`}>
           <Wordmark />
@@ -47,7 +47,7 @@ function Nav() {
           </a>
           <Link
             href="/demo"
-            className="rounded-xl border border-sand-300 px-3.5 py-1.5 text-sand-800 transition hover:border-brand-600 hover:text-brand-700"
+            className="knopf knopf-kontur px-4 py-1.5 text-sand-800"
           >
             Produkt ansehen
           </Link>
@@ -56,7 +56,7 @@ function Nav() {
           </Link>
           <a
             href="#pilot"
-            className="rounded-xl bg-brand-700 px-4 py-2 font-semibold text-white shadow-sm transition hover:bg-brand-800"
+            className="knopf knopf-primaer px-5 py-2 shadow-sm"
           >
             Pilotkunde werden
           </a>
@@ -78,7 +78,7 @@ function HeroProofCard() {
   ];
   return (
     <div className="relative">
-      <div className="rounded-3xl border border-sand-200 bg-white p-6 shadow-[0_24px_60px_-24px_rgba(19,78,74,0.25)]">
+      <div className="tile p-6">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-wider text-sand-500">
@@ -107,7 +107,7 @@ function HeroProofCard() {
           {monate.map((x) => (
             <div
               key={x.m}
-              className="rounded-xl border border-brand-100 bg-brand-50/60 px-2 py-2.5 text-center"
+              className="rounded-2xl bg-tile-mint/70 px-2 py-2.5 text-center"
             >
               <p className="text-[11px] font-semibold text-sand-600">{x.m}</p>
               <p className="tnum mt-0.5 text-[13px] font-semibold text-sand-900">
@@ -121,7 +121,7 @@ function HeroProofCard() {
           ))}
         </div>
 
-        <div className="mt-5 flex items-center justify-between rounded-2xl bg-sand-100 px-4 py-3">
+        <div className="zeile-soft mt-5 flex items-center justify-between px-4 py-3">
           <p className="text-[13px] text-sand-700">
             Differenz Bank&nbsp;↔&nbsp;Buchhaltung, Jan–Jun
           </p>
@@ -132,7 +132,7 @@ function HeroProofCard() {
       </div>
 
       {/* Schwebende Autopilot-Karte */}
-      <div className="absolute -bottom-7 -left-4 hidden rounded-2xl border border-sand-200 bg-white px-4 py-3 shadow-lg sm:block">
+      <div className="absolute -bottom-7 -left-4 hidden rounded-2xl bg-white px-4 py-3 shadow-lg sm:block">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-sand-500">
           Autopilot · diese Woche
         </p>
@@ -173,13 +173,13 @@ function Hero() {
           <div className="mt-8 flex flex-wrap items-center gap-3.5">
             <a
               href="#pilot"
-              className="rounded-2xl bg-brand-700 px-6 py-3.5 text-[15px] font-semibold text-white shadow-md shadow-brand-700/20 transition hover:bg-brand-800"
+              className="knopf knopf-primaer px-6 py-3 text-[15px] shadow-md shadow-brand-700/20"
             >
               Pilotkunde werden
             </a>
             <Link
               href="/demo"
-              className="rounded-2xl border border-sand-300 bg-white px-6 py-3.5 text-[15px] font-semibold text-sand-800 transition hover:border-brand-600 hover:text-brand-700"
+              className="knopf knopf-hell px-6 py-3 text-[15px]"
             >
               Produkt ansehen →
             </Link>
@@ -216,15 +216,15 @@ function ProofBand() {
     },
   ];
   return (
-    <section className="bg-brand-950 py-14 text-sand-50">
-      <div className="mx-auto grid max-w-6xl gap-10 px-5 sm:grid-cols-3">
+    <section className="mx-auto max-w-6xl px-5">
+      <div className="tile tile-mint grid gap-10 p-8 sm:grid-cols-3 sm:p-10">
         {stats.map((s) => (
           <div key={s.label} className="text-center sm:text-left">
-            <p className="tnum font-display text-4xl font-bold text-brand-300">
+            <p className="tnum zahl-hero text-4xl text-tile-mint-deep">
               {s.wert}
             </p>
-            <p className="mt-1.5 font-semibold">{s.label}</p>
-            <p className="mt-0.5 text-sm text-sand-50/60">{s.sub}</p>
+            <p className="mt-1.5 font-semibold text-ink">{s.label}</p>
+            <p className="mt-0.5 text-sm text-tile-mint-ink">{s.sub}</p>
           </div>
         ))}
       </div>
@@ -274,9 +274,9 @@ function Funktion() {
         {schritte.map((s) => (
           <div
             key={s.nr}
-            className="rounded-3xl border border-sand-200 bg-white p-7 shadow-sm"
+            className="tile p-7"
           >
-            <span className="tnum inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-brand-100 font-display text-lg font-bold text-brand-800">
+            <span className="tnum inline-flex h-10 w-10 items-center justify-center rounded-full bg-tile-mint font-display text-lg font-bold text-tile-mint-ink">
               {s.nr}
             </span>
             <h3 className="mt-4 text-lg font-semibold text-sand-900">
@@ -289,7 +289,7 @@ function Funktion() {
       <div className="mt-8">
         <Link
           href="/onboarding"
-          className="inline-flex items-center gap-2 rounded-2xl border border-brand-300 bg-brand-50 px-5 py-3 text-[14px] font-semibold text-brand-800 transition hover:border-brand-600"
+          className="knopf knopf-hell inline-flex items-center gap-2 px-5 py-3 text-[14px]"
         >
           Den Start selbst ausprobieren →
         </Link>
@@ -307,8 +307,8 @@ function AvisVisual() {
     { name: "…9 weitere", betrag: "3.585,53" },
   ];
   return (
-    <div className="rounded-3xl border border-sand-200 bg-white p-6 shadow-sm">
-      <div className="flex items-center justify-between rounded-2xl bg-brand-50 px-4 py-3.5">
+    <div className="tile p-6">
+      <div className="flex items-center justify-between rounded-2xl bg-tile-mint px-4 py-3.5">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wider text-sand-500">
             Zahlungseingang · Bank
@@ -337,7 +337,7 @@ function AvisVisual() {
         {posten.map((p) => (
           <li
             key={p.name}
-            className="flex items-center justify-between rounded-xl border border-sand-200/80 px-4 py-2.5 text-sm"
+            className="zeile-soft flex items-center justify-between px-4 py-2.5 text-sm"
           >
             <span className="text-sand-700">{p.name}</span>
             <span className="tnum flex items-center gap-2 font-semibold text-sand-900">
@@ -377,7 +377,7 @@ function Pflege() {
     },
   ];
   return (
-    <section id="pflege" className="bg-sand-100/60 py-24">
+    <section id="pflege" className="py-24">
       <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 lg:grid-cols-2">
         <div>
           <p className="text-sm font-bold uppercase tracking-wider text-brand-700">
@@ -421,32 +421,32 @@ function CentAnker() {
     <section id="beweis" className="mx-auto max-w-6xl px-5 py-24">
       <div className="grid items-center gap-14 lg:grid-cols-[1fr_1.05fr]">
         <div className="order-2 lg:order-1">
-          <div className="rounded-3xl border border-sand-200 bg-white p-6 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-sand-500">
+          <div className="tile tile-mint p-6">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-tile-mint-ink">
               Juni · Prüfprotokoll
             </p>
             <div className="mt-4 space-y-3">
-              <div className="flex items-center justify-between border-b border-sand-100 pb-3">
-                <span className="text-sm text-sand-700">
+              <div className="flex items-center justify-between border-b border-white/70 pb-3">
+                <span className="text-sm text-tile-mint-ink">
                   Umsätze laut Bank
                 </span>
-                <span className="tnum font-semibold text-sand-900">
+                <span className="tnum font-semibold text-ink">
                   737 · 18.114,56&nbsp;€
                 </span>
               </div>
-              <div className="flex items-center justify-between border-b border-sand-100 pb-3">
-                <span className="text-sm text-sand-700">
+              <div className="flex items-center justify-between border-b border-white/70 pb-3">
+                <span className="text-sm text-tile-mint-ink">
                   Davon verbucht
                 </span>
-                <span className="tnum font-semibold text-sand-900">
+                <span className="tnum font-semibold text-ink">
                   737 · 18.114,56&nbsp;€
                 </span>
               </div>
-              <div className="flex items-center justify-between border-b border-sand-100 pb-3">
-                <span className="text-sm text-sand-700">Doppelt gebucht</span>
-                <span className="tnum font-semibold text-sand-900">0</span>
+              <div className="flex items-center justify-between border-b border-white/70 pb-3">
+                <span className="text-sm text-tile-mint-ink">Doppelt gebucht</span>
+                <span className="tnum font-semibold text-ink">0</span>
               </div>
-              <div className="flex items-center justify-between rounded-xl bg-status-good-bg px-3.5 py-3">
+              <div className="flex items-center justify-between rounded-2xl bg-white px-3.5 py-3">
                 <span className="flex items-center gap-2 text-sm font-semibold text-status-good">
                   <svg width="14" height="14" viewBox="0 0 12 12" aria-hidden>
                     <path
@@ -465,7 +465,7 @@ function CentAnker() {
                 </span>
               </div>
             </div>
-            <p className="mt-4 text-[13px] leading-relaxed text-sand-500">
+            <p className="mt-4 text-[13px] leading-relaxed text-tile-mint-ink">
               Weicht auch nur ein Cent ab, sehen Sie sofort wo — bevor es Ihre
               Kanzlei oder die Betriebsprüfung tut.
             </p>
@@ -514,15 +514,15 @@ function Kanzlei() {
     },
   ];
   return (
-    <section id="kanzlei" className="bg-brand-950 py-24 text-sand-50">
-      <div className="mx-auto max-w-6xl px-5">
-        <p className="text-sm font-bold uppercase tracking-wider text-brand-300">
+    <section id="kanzlei" className="mx-auto max-w-6xl px-5 py-12">
+      <div className="tile tile-rose p-8 sm:p-12">
+        <p className="text-sm font-bold uppercase tracking-wider text-tile-rose-ink">
           Für Steuerkanzleien
         </p>
-        <h2 className="font-display mt-3 max-w-2xl text-3xl font-semibold sm:text-4xl">
+        <h2 className="font-display mt-3 max-w-2xl text-3xl font-semibold text-ink sm:text-4xl">
           Mehr Mandate schaffen — mit dem Personal, das Sie haben.
         </h2>
-        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-sand-50/70">
+        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-tile-rose-ink">
           Drei von vier Kanzleien finden keine Steuerfachangestellten mehr.
           {" "}{BRAND.name} übernimmt die vorbereitende Buchhaltung Ihrer
           Pflege-Mandanten — Sie prüfen, statt zu tippen.
@@ -531,17 +531,17 @@ function Kanzlei() {
           {punkte.map((p) => (
             <div
               key={p.titel}
-              className="rounded-3xl border border-white/10 bg-white/5 p-7"
+              className="rounded-[28px] bg-white/70 p-7"
             >
-              <h3 className="font-semibold text-sand-50">{p.titel}</h3>
-              <p className="mt-2 leading-relaxed text-sand-50/70">{p.text}</p>
+              <h3 className="font-semibold text-ink">{p.titel}</h3>
+              <p className="mt-2 leading-relaxed text-ink-soft">{p.text}</p>
             </div>
           ))}
         </div>
         <div className="mt-9">
           <Link
             href="/kanzlei"
-            className="inline-flex items-center gap-2 rounded-2xl bg-brand-300 px-6 py-3 text-[15px] font-bold text-brand-950 transition hover:bg-brand-200"
+            className="knopf inline-flex items-center gap-2 bg-tile-rose-ink px-6 py-3 text-[15px] text-white hover:opacity-90"
           >
             Kanzlei-Cockpit ansehen →
           </Link>
@@ -554,18 +554,18 @@ function Kanzlei() {
 function PilotCta() {
   return (
     <section id="pilot" className="mx-auto max-w-6xl px-5 py-24">
-      <div className="relative overflow-hidden rounded-[2rem] border border-brand-200 bg-white px-7 py-14 text-center shadow-sm sm:px-14">
+      <div className="tile-hero relative overflow-hidden px-7 py-14 text-center sm:px-14">
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-100/70 blur-2xl"
+          className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/10 blur-2xl"
         />
-        <p className="text-sm font-bold uppercase tracking-wider text-brand-700">
+        <p className="text-[12px] font-semibold uppercase tracking-wider text-teal-100">
           Pilotprogramm 2026
         </p>
-        <h2 className="font-display mx-auto mt-3 max-w-2xl text-3xl font-semibold text-sand-900 sm:text-4xl">
+        <h2 className="font-display mx-auto mt-3 max-w-2xl text-3xl font-semibold text-white sm:text-4xl">
           Wir suchen fünf Pflegedienste, die ihre Buchhaltung abgeben wollen.
         </h2>
-        <p className="mx-auto mt-4 max-w-xl text-lg text-sand-700">
+        <p className="mx-auto mt-4 max-w-xl text-lg text-teal-50">
           Sie bringen Ihre Bankumsätze mit. Wir richten alles gemeinsam ein,
           Sie zahlen in der Pilotphase nichts — und behalten am Ende eine
           Buchhaltung, die sich selbst erledigt.
@@ -573,18 +573,18 @@ function PilotCta() {
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3.5">
           <a
             href="mailto:pilot@kontoklar.example?subject=Pilotprogramm"
-            className="rounded-2xl bg-brand-700 px-7 py-3.5 text-[15px] font-semibold text-white shadow-md shadow-brand-700/20 transition hover:bg-brand-800"
+            className="knopf knopf-hell px-7 py-3 text-[15px]"
           >
             Pilot-Platz anfragen
           </a>
           <Link
             href="/demo"
-            className="rounded-2xl border border-sand-300 px-7 py-3.5 text-[15px] font-semibold text-sand-800 transition hover:border-brand-600 hover:text-brand-700"
+            className="knopf border-[1.5px] border-white/50 px-7 py-3 text-[15px] text-white transition hover:border-white"
           >
             Erst das Produkt ansehen
           </Link>
         </div>
-        <p className="mt-6 text-[13px] text-sand-500">
+        <p className="mt-6 text-[13px] text-teal-100/90">
           Ehrlich gesagt: {BRAND.name} ist jung. Genau deshalb bekommen
           Pilotkunden Konditionen und Einfluss, die es später nicht mehr gibt.
         </p>
@@ -595,7 +595,7 @@ function PilotCta() {
 
 function Footer() {
   return (
-    <footer className="border-t border-sand-200 bg-sand-100/50">
+    <footer className="border-t border-sand-200">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 py-10 text-sm text-sand-600 sm:flex-row">
         <Wordmark />
         <p>{BRAND.claim}</p>
@@ -614,7 +614,7 @@ function Footer() {
 
 export default function Landing() {
   return (
-    <main>
+    <main className="bg-bento-bg">
       <Nav />
       <Hero />
       <ProofBand />

@@ -107,3 +107,65 @@ body {
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* ============================================================
+   Bento 2.0 — Redesign-Tokens (Daniels Wahl: Variante C)
+   Farbige Kacheln, runde Formen, große freundliche Zahlen —
+   diszipliniert eingesetzt: Zahlen bleiben .tnum, Status-Farben
+   bleiben Status, Emojis sparsam (max. 1 pro Kachel-Titel).
+   ============================================================ */
+
+@theme {
+  /* Bento-Fläche + Kachel-Tints (Pastell, je mit Tiefton für Text) */
+  --color-bento-bg: #f5f3ef;
+  --color-tile-mint: #dcefe6;
+  --color-tile-mint-ink: #12695a;
+  --color-tile-mint-deep: #0f6b45;
+  --color-tile-apricot: #fbe7d4;
+  --color-tile-apricot-ink: #9a5510;
+  --color-tile-lavender: #e9e4f8;
+  --color-tile-lavender-ink: #4c3fa3;
+  --color-tile-rose: #f7dfe7;
+  --color-tile-rose-ink: #96305c;
+  --color-ink: #26221c;
+  --color-ink-soft: #6f6757;
+}
+
+/* Bento-Bausteine — EINE Wahrheit für alle Seiten */
+.tile {
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(38, 34, 28, 0.06), 0 8px 24px -18px rgba(38, 34, 28, 0.18);
+}
+.tile-mint { background: var(--color-tile-mint); }
+.tile-apricot { background: var(--color-tile-apricot); }
+.tile-lavender { background: var(--color-tile-lavender); }
+.tile-rose { background: var(--color-tile-rose); }
+.tile-hero {
+  border-radius: 28px;
+  background: linear-gradient(135deg, #0f766e, #0d9488 55%, #2dd4bf);
+  color: #fff;
+  box-shadow: 0 20px 40px -18px rgba(15, 118, 110, 0.45);
+}
+
+/* Zahlen groß + freundlich (Inter ExtraBold, immer tabellarisch) */
+.zahl-hero { font-weight: 800; letter-spacing: -0.03em; line-height: 0.95;
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+/* Pillen-Knöpfe */
+.knopf { border-radius: 9999px; font-weight: 700; transition: all .15s ease; }
+.knopf-primaer { background: var(--color-brand-700); color: #fff; }
+.knopf-primaer:hover { background: var(--color-brand-800); }
+.knopf-hell { background: #fff; color: var(--color-brand-700);
+  box-shadow: 0 2px 8px rgba(38,34,28,.12); }
+.knopf-kontur { border: 1.5px solid var(--color-sand-300); color: var(--color-sand-700); }
+.knopf-kontur:hover { border-color: var(--color-brand-600); color: var(--color-brand-700); }
+
+/* Chip/Badge in Kachel-Tints */
+.chip { border-radius: 9999px; font-weight: 700; font-size: 12px;
+  padding: 4px 12px; }
+.chip-apricot { background: var(--color-tile-apricot); color: var(--color-tile-apricot-ink); }
+.chip-mint { background: var(--color-tile-mint); color: var(--color-tile-mint-ink); }
+
+/* Zeilen-Element in Kacheln (Prüfliste, Listen) */
+.zeile-soft { border-radius: 16px; background: #f7f5f1; }

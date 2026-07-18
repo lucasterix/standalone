@@ -56,7 +56,7 @@ export default function Login() {
         </div>
         <form
           onSubmit={anmelden}
-          className="rise rounded-3xl border border-sand-200 bg-white p-8 shadow-[0_24px_60px_-30px_rgba(19,78,74,0.25)]"
+          className="rise tile rounded-[28px] p-8"
         >
           <h1 className="font-display text-xl font-semibold text-sand-900">
             Anmelden
@@ -71,7 +71,7 @@ export default function Login() {
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               required
-              className="mt-1.5 w-full rounded-xl border border-sand-300 px-4 py-3 text-[15px] focus:border-brand-600 focus:outline-none"
+              className="mt-1.5 w-full rounded-2xl border border-sand-300 bg-white px-4 py-3 text-[15px] focus:border-brand-600 focus:outline-none"
             />
           </label>
           <label className="mt-4 block">
@@ -84,7 +84,7 @@ export default function Login() {
               onChange={(e) => setPasswort(e.target.value)}
               autoComplete="current-password"
               required
-              className="mt-1.5 w-full rounded-xl border border-sand-300 px-4 py-3 text-[15px] focus:border-brand-600 focus:outline-none"
+              className="mt-1.5 w-full rounded-2xl border border-sand-300 bg-white px-4 py-3 text-[15px] focus:border-brand-600 focus:outline-none"
             />
           </label>
           {fehler && (
@@ -95,7 +95,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={laedt}
-            className="mt-6 w-full rounded-2xl bg-brand-700 py-3.5 text-[15px] font-semibold text-white shadow-md shadow-brand-700/20 transition hover:bg-brand-800 disabled:opacity-50"
+            className="knopf knopf-primaer mt-6 w-full py-3.5 text-[15px] disabled:opacity-50"
           >
             {laedt ? "Melde an …" : "Anmelden"}
           </button>
@@ -109,7 +109,7 @@ export default function Login() {
         </p>
 
         {/* Demo-Zugänge (Seed) — bewusst sichtbar für Pilot-Interessenten. */}
-        <div className="mt-4 rounded-2xl border border-dashed border-brand-300 bg-brand-50/60 px-5 py-4 text-[13px] text-brand-900">
+        <div className="tile tile-mint mt-4 px-5 py-4 text-[13px] text-tile-mint-ink">
           <p className="font-bold">Demo ausprobieren:</p>
           <div className="mt-2 flex flex-wrap gap-2">
             <button
@@ -117,7 +117,7 @@ export default function Login() {
               onClick={() =>
                 anmelden(undefined, "inhaberin@sonnenweg.example", "sonnenweg-demo-2026")
               }
-              className="rounded-lg border border-brand-300 bg-white px-3 py-1.5 font-semibold transition hover:border-brand-600"
+              className="knopf knopf-hell px-4 py-1.5 text-[13px]"
             >
               Als Pflegedienst
             </button>
@@ -126,7 +126,7 @@ export default function Login() {
               onClick={() =>
                 anmelden(undefined, "kanzlei@meyer-kollegen.example", "kanzlei-demo-2026")
               }
-              className="rounded-lg border border-brand-300 bg-white px-3 py-1.5 font-semibold transition hover:border-brand-600"
+              className="knopf knopf-hell px-4 py-1.5 text-[13px]"
             >
               Als Steuerkanzlei
             </button>

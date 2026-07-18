@@ -1,10 +1,11 @@
 "use client";
 
-/* Übersicht — echte Zahlen aus der API (Cent-Anker, Prüfliste, Autopilot). */
+/* Übersicht — echte Zahlen aus der API (Cent-Anker, Prüfliste, Autopilot).
+   Look: Bento 2.0 (docs/DESIGN-BENTO.md), Grid wie /design/c. */
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { api, getOrgId, type JournalZeile, type Saldo } from "@/lib/client";
+import { api, getOrgId, type JournalZeile, type Saldo, euro, datumKurz } from "@/lib/client";
 
 const MONATE = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 const JAHR = 2026;
@@ -33,137 +34,161 @@ export default function Uebersicht() {
   const quote = erfasstGesamt ? Math.round((gebuchtGesamt / erfasstGesamt) * 100) : 0;
 
   return (
-    <main className="mx-auto max-w-5xl space-y-5 px-6 py-7">
+    <main
+      className="mx-auto max-w-5xl space-y-4 px-6 py-7"
+      style={{ fontFeatureSettings: '"tnum"' }}
+    >
       {fehler && (
-        <p className="rounded-xl bg-status-crit-bg px-4 py-3 text-[13px] font-medium text-status-crit">
+        <p className="rounded-2xl bg-status-crit-bg px-4 py-3 text-[13px] font-medium text-status-crit">
           {fehler}
         </p>
       )}
 
-      {/* Kacheln */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Kachel label="Automatisch erledigt" wert={`${quote} %`}
-                sub={`${gebuchtGesamt} von ${erfasstGesamt} Buchungen`} />
-        <Kachel label="Zur Prüfung" warn
-                wert={offen ? String(offen.length) : "…"}
-                sub="wartet auf Ihre Entscheidung" link="/app/pruefliste" />
-        <Kachel label={`Saldenabgleich ${aktueller ? MONATE[aktueller.monat - 1] : ""}`}
-                good={aktueller?.ok}
-                wert={aktueller ? (aktueller.ok ? "0,00 €" : `${aktueller.diff_summe} €`) : "…"}
-                sub={aktueller ? `${aktueller.erfasst_count} / ${aktueller.tx_count} Umsätze` : ""} />
-        <Kachel label="DATEV"
-                wert={aktueller?.datev_bereit ? "bereit" : "offen"}
-                sub={aktueller?.datev_bereit ? "Monat kann exportiert werden" : "erst Prüfliste leeren"}
-                link="/app/datev" />
-      </div>
-
-      {/* Cent-Anker-Leiste */}
-      <section className="rounded-2xl border border-sand-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <h2 className="font-semibold text-sand-900">
-              Cent-Anker · Saldenabgleich {JAHR}
-            </h2>
-            <p className="mt-0.5 text-[13px] text-sand-600">
-              Bank ↔ Buchhaltung, je Monat auf den Cent geprüft
-            </p>
-          </div>
-          {saldo && (
-            <span
-              className={
-                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-semibold " +
-                (saldo.ok
-                  ? "bg-status-good-bg text-status-good"
-                  : "bg-status-warn-bg text-status-warn")
-              }
-            >
-              {saldo.ok ? "✓ Alle Monate Cent-genau" : "Abweichungen — siehe Monate"}
-            </span>
-          )}
-        </div>
-        <div className="mt-5 grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-12">
-          {MONATE.map((m, i) => {
-            const d = saldo?.monate[i];
-            const hatDaten = d && (d.tx_count > 0 || d.erfasst_count > 0);
-            return (
-              <div
-                key={m}
-                className={
-                  "rounded-xl border px-2 py-3 text-center " +
-                  (hatDaten
-                    ? d.ok
-                      ? "border-brand-100 bg-brand-50/60"
-                      : "border-status-crit/40 bg-status-crit-bg"
-                    : "border-sand-100 bg-sand-50/40")
-                }
+      <div className="grid grid-cols-12 gap-4">
+        {/* Hero: Autopilot-Quote */}
+        <section className="tile-hero col-span-12 overflow-hidden p-8 lg:col-span-7">
+          <div className="flex items-start justify-between gap-6">
+            <div>
+              <p className="text-[12px] font-semibold uppercase tracking-wider text-teal-100">
+                Diesen Monat automatisch erledigt
+              </p>
+              <p className="zahl-hero mt-3 text-[72px]">{quote} %</p>
+              <p className="mt-2 text-[15px] text-teal-50">
+                {gebuchtGesamt} von {erfasstGesamt} Buchungen — nur{" "}
+                <strong>{offen ? offen.length : "…"}</strong> brauchen Sie.
+              </p>
+              <Link
+                href="/app/pruefliste"
+                className="knopf knopf-hell mt-6 inline-block px-6 py-3 text-[14px]"
               >
-                <p className="text-[11px] font-semibold text-sand-600">{m}</p>
-                <p
+                {offen ? offen.length : "…"} Entscheidungen treffen →
+              </Link>
+            </div>
+            {/* Deko-Ringe */}
+            <div aria-hidden className="relative hidden h-36 w-36 shrink-0 sm:block">
+              <div className="absolute inset-0 rounded-full border-[10px] border-white/20" />
+              <div className="absolute inset-4 rounded-full border-[10px] border-white/30" />
+              <div className="absolute inset-8 flex items-center justify-center rounded-full bg-white/15 text-[30px] backdrop-blur">
+                🚀
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Cent-Anker */}
+        <section className="tile tile-mint col-span-12 p-7 lg:col-span-5">
+          <p className="text-[13px] font-bold uppercase tracking-wider text-tile-mint-ink">
+            Cent-Anker · {JAHR}
+          </p>
+          <p
+            className={
+              "zahl-hero mt-2 text-[46px] " +
+              (aktueller && !aktueller.ok ? "text-status-crit" : "text-tile-mint-deep")
+            }
+          >
+            {aktueller ? (aktueller.ok ? "0,00 €" : `${aktueller.diff_summe} €`) : "…"}
+          </p>
+          <p
+            className={
+              "mt-1 text-[13.5px] font-medium " +
+              (aktueller && !aktueller.ok ? "text-status-crit" : "text-[#3f7a63]")
+            }
+          >
+            {aktueller && !aktueller.ok
+              ? "Abweichung zur Bank — bitte prüfen"
+              : "Bank ↔ Buchhaltung, je Monat auf den Cent geprüft"}
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {MONATE.map((m, i) => {
+              const d = saldo?.monate[i];
+              const hatDaten = d && (d.tx_count > 0 || d.erfasst_count > 0);
+              return (
+                <span
+                  key={m}
+                  title={hatDaten ? `${d.tx_count} Umsätze` : undefined}
                   className={
-                    "mt-1 text-[13px] font-bold " +
+                    "flex h-11 w-11 flex-col items-center justify-center rounded-2xl text-[10px] font-bold " +
                     (hatDaten
-                      ? d.ok ? "text-status-good" : "text-status-crit"
-                      : "text-sand-300")
+                      ? d.ok
+                        ? "bg-white text-tile-mint-deep shadow-sm"
+                        : "bg-white text-status-crit shadow-sm"
+                      : "bg-white/45 text-sand-400")
                   }
                 >
-                  {hatDaten ? (d.ok ? "✓" : "Δ") : "–"}
-                </p>
-                {hatDaten && (
-                  <p className="tnum text-[10px] text-sand-500">{d.tx_count} Tx</p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </section>
+                  <span className="text-[13px]">
+                    {hatDaten ? (d.ok ? "✓" : "Δ") : "–"}
+                  </span>
+                  {m}
+                </span>
+              );
+            })}
+          </div>
+        </section>
 
-      {/* Prüflisten-Vorschau */}
-      <section className="rounded-2xl border border-sand-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-sand-100 px-6 py-4">
-          <h2 className="font-semibold text-sand-900">Als Nächstes für Sie</h2>
-          <Link href="/app/pruefliste" className="text-[13px] font-semibold text-brand-700 underline">
-            Zur Prüfliste →
+        {/* Prüflisten-Vorschau */}
+        <section className="tile col-span-12 p-7 lg:col-span-8">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-[15px] font-bold text-ink">Als Nächstes für Sie 📋</p>
+            <div className="flex items-center gap-3">
+              {offen && offen.length > 0 && (
+                <span className="chip chip-apricot">{offen.length} offen</span>
+              )}
+              <Link
+                href="/app/pruefliste"
+                className="text-[13px] font-semibold text-brand-700 underline"
+              >
+                Zur Prüfliste →
+              </Link>
+            </div>
+          </div>
+          <ul className="mt-4 space-y-2.5">
+            {(offen ?? []).slice(0, 5).map((j) => (
+              <li
+                key={j.id}
+                className="zeile-soft flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3"
+              >
+                <span className="tnum w-20 shrink-0 text-[12px] text-ink-soft">{datumKurz(j.datum)}</span>
+                <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold text-ink">
+                  {j.partner || j.text}
+                </span>
+                <span className="tnum text-[13.5px] font-bold text-ink">
+                  {euro(j.betrag)}
+                </span>
+              </li>
+            ))}
+            {offen && offen.length === 0 && (
+              <li className="zeile-soft px-4 py-6 text-center text-[14px] text-ink-soft">
+                ✓ Nichts offen — alles erledigt.
+              </li>
+            )}
+          </ul>
+        </section>
+
+        {/* DATEV */}
+        <section className="tile tile-rose col-span-12 flex flex-col justify-between p-7 lg:col-span-4">
+          <div>
+            <p className="text-[14px] font-bold text-tile-rose-ink">DATEV 📦</p>
+            <p className="mt-2 text-[22px] font-extrabold leading-snug text-ink">
+              {aktueller
+                ? aktueller.datev_bereit
+                  ? `${MONATE[aktueller.monat - 1]} ist bereit!`
+                  : "Noch offen"
+                : "…"}
+            </p>
+            <p className="mt-1 text-[12.5px] font-medium text-[#a96b85]">
+              {aktueller?.datev_bereit
+                ? "Monat kann exportiert werden"
+                : "erst Prüfliste leeren"}
+            </p>
+          </div>
+          <Link
+            href="/app/datev"
+            className="knopf mt-4 block bg-[#96305c] py-2.5 text-center text-[13px] text-white"
+          >
+            Zum DATEV-Export
           </Link>
-        </div>
-        <ul className="divide-y divide-sand-100">
-          {(offen ?? []).slice(0, 5).map((j) => (
-            <li key={j.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-6 py-3">
-              <span className="tnum w-20 shrink-0 text-[12px] text-sand-500">{j.datum}</span>
-              <span className="min-w-0 flex-1 truncate text-[14px] text-sand-900">
-                {j.partner || j.text}
-              </span>
-              <span className="tnum text-[14px] font-semibold text-sand-900">
-                {j.betrag} €
-              </span>
-            </li>
-          ))}
-          {offen && offen.length === 0 && (
-            <li className="px-6 py-6 text-center text-[14px] text-sand-500">
-              ✓ Nichts offen — alles erledigt.
-            </li>
-          )}
-        </ul>
-      </section>
+        </section>
+      </div>
     </main>
   );
-}
-
-function Kachel({ label, wert, sub, good, warn, link }: {
-  label: string; wert: string; sub: string;
-  good?: boolean; warn?: boolean; link?: string;
-}) {
-  const inhalt = (
-    <div className="h-full rounded-2xl border border-sand-200 bg-white p-5 shadow-sm transition hover:border-brand-300">
-      <p className="text-[12px] font-semibold uppercase tracking-wider text-sand-500">{label}</p>
-      <p className={
-        "tnum font-display mt-2 text-3xl font-bold " +
-        (good ? "text-status-good" : warn ? "text-amber-acc" : "text-sand-900")
-      }>
-        {good && <span aria-hidden className="mr-1.5 align-[3px] text-xl">✓</span>}
-        {wert}
-      </p>
-      <p className="mt-1 text-[13px] text-sand-600">{sub}</p>
-    </div>
-  );
-  return link ? <Link href={link}>{inhalt}</Link> : inhalt;
 }

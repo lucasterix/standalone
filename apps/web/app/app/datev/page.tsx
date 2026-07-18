@@ -97,8 +97,8 @@ export default function Datev() {
 
       {/* Bereite Monate ohne Stapel */}
       {bereit.filter((m) => !mitStapel.has(m.monat)).length > 0 && (
-        <section className="rounded-2xl border border-brand-200 bg-brand-50/70 p-5">
-          <p className="text-[14px] font-semibold text-brand-900">
+        <section className="tile tile-mint p-6">
+          <p className="text-[14px] font-bold text-tile-mint-ink">
             Cent-geprüft und bereit zum Stapeln:
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -108,7 +108,7 @@ export default function Datev() {
                 type="button"
                 disabled={busy === `bau-${m.monat}`}
                 onClick={() => bauen(m.monat)}
-                className="rounded-xl bg-brand-700 px-4 py-2.5 text-[13px] font-semibold text-white transition hover:bg-brand-800 disabled:opacity-50"
+                className="knopf knopf-primaer px-5 py-2.5 text-[13px] disabled:opacity-50"
               >
                 {busy === `bau-${m.monat}`
                   ? "Baue …"
@@ -120,7 +120,7 @@ export default function Datev() {
       )}
 
       {/* Stapel-Liste */}
-      <section className="overflow-x-auto rounded-2xl border border-sand-200 bg-white shadow-sm">
+      <section className="tile overflow-x-auto">
         <table className="w-full min-w-[560px] text-[13.5px]">
           <thead>
             <tr className="border-b border-sand-100 text-left text-[11px] font-semibold uppercase tracking-wider text-sand-500">
@@ -133,22 +133,22 @@ export default function Datev() {
           <tbody className="divide-y divide-sand-100">
             {(stapel ?? []).map((s) => (
               <tr key={s.id} className="transition hover:bg-sand-50">
-                <td className="px-5 py-3.5 font-semibold text-sand-900">
+                <td className="px-5 py-4 font-semibold text-sand-900">
                   {MONATE[Number(s.von.slice(5, 7)) - 1]} {s.von.slice(0, 4)}
                 </td>
-                <td className="tnum px-3 py-3.5 text-right text-sand-700">
+                <td className="tnum px-3 py-4 text-right text-sand-700">
                   {s.saetze.toLocaleString("de-DE")}
                 </td>
-                <td className="px-3 py-3.5">
+                <td className="px-3 py-4">
                   {s.status === "uebernommen" ? (
-                    <span className="font-semibold text-status-good">✓ übernommen</span>
+                    <span className="chip chip-mint">✓ übernommen</span>
                   ) : s.status === "exportiert" ? (
-                    <span className="font-semibold text-brand-700">exportiert</span>
+                    <span className="chip bg-tile-lavender text-tile-lavender-ink">exportiert</span>
                   ) : (
-                    <span className="font-semibold text-amber-acc">● bereit</span>
+                    <span className="chip chip-apricot">● bereit</span>
                   )}
                 </td>
-                <td className="px-5 py-3.5 text-right">
+                <td className="px-5 py-4 text-right">
                   <div className="inline-flex gap-2">
                     {s.status !== "uebernommen" && (
                       <>
@@ -156,7 +156,7 @@ export default function Datev() {
                           type="button"
                           disabled={busy === `dl-${s.id}`}
                           onClick={() => herunterladen(s)}
-                          className="rounded-lg bg-brand-700 px-3 py-1.5 text-[12px] font-semibold text-white transition hover:bg-brand-800 disabled:opacity-50"
+                          className="knopf knopf-primaer px-4 py-1.5 text-[12px] disabled:opacity-50"
                         >
                           EXTF herunterladen
                         </button>
@@ -165,7 +165,7 @@ export default function Datev() {
                             type="button"
                             disabled={busy === `ok-${s.id}`}
                             onClick={() => uebernommen(s)}
-                            className="rounded-lg border border-sand-300 px-3 py-1.5 text-[12px] font-semibold text-sand-700 transition hover:border-status-good hover:text-status-good"
+                            className="knopf knopf-kontur px-4 py-1.5 text-[12px] disabled:opacity-50"
                           >
                             Kanzlei hat importiert
                           </button>

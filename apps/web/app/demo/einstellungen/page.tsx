@@ -11,8 +11,8 @@ function Karte({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-sand-200 bg-white p-6 shadow-sm">
-      <h2 className="font-semibold text-sand-900">{titel}</h2>
+    <section className="tile p-6">
+      <h2 className="text-[14px] font-bold text-ink">{titel}</h2>
       <p className="mt-0.5 text-[13px] text-sand-600">{sub}</p>
       <div className="mt-4">{children}</div>
     </section>
@@ -86,7 +86,7 @@ export default function EinstellungenSeite() {
               <label
                 key={s.stufe}
                 className={
-                  "flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 transition " +
+                  "flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition " +
                   (s.aktiv
                     ? "border-brand-600 bg-brand-50/60"
                     : "border-sand-200 hover:border-sand-300")

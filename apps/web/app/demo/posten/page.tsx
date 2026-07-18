@@ -63,7 +63,7 @@ export default function PostenSeite() {
           <p className="text-[11px] font-semibold uppercase tracking-wider text-sand-500">
             Offene Forderungen
           </p>
-          <p className="tnum font-display text-2xl font-bold text-sand-900">
+          <p className="tnum zahl-hero text-2xl text-ink">
             18.464,23 €
           </p>
         </div>
@@ -73,7 +73,7 @@ export default function PostenSeite() {
         {FORDERUNGEN.map((f) => (
           <li
             key={f.traeger}
-            className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-2xl border border-sand-200 bg-white px-5 py-4 shadow-sm"
+            className="tile flex flex-wrap items-center gap-x-5 gap-y-2 px-5 py-4"
           >
             <div className="min-w-0 flex-1">
               <p className="truncate text-[14.5px] font-semibold text-sand-900">
@@ -103,11 +103,11 @@ export default function PostenSeite() {
       </ul>
 
       {/* Sammelavis-Prinzip */}
-      <section className="rounded-2xl border border-sand-200 bg-white p-6 shadow-sm">
-        <h2 className="font-semibold text-sand-900">
+      <section className="tile tile-lavender p-6">
+        <h2 className="text-[14px] font-bold text-tile-lavender-ink">
           So löst sich ein Sammelavis auf
         </h2>
-        <p className="mt-2 max-w-2xl text-[13.5px] leading-relaxed text-sand-700">
+        <p className="mt-2 max-w-2xl text-[13.5px] leading-relaxed text-ink">
           Zahlt die Kasse (z. B. 4.812,33 € in einem Betrag), gleicht{" "}
           der Autopilot die enthaltenen Einzelforderungen aus — Klient für
           Klient, Leistungsart für Leistungsart. Bleibt ein Rest, sehen Sie

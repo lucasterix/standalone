@@ -60,23 +60,23 @@ export default function BelegeSeite() {
         </div>
         <button
           type="button"
-          className="rounded-xl border border-sand-300 bg-white px-4 py-2 text-[13px] font-semibold text-sand-700 transition hover:border-brand-600 hover:text-brand-700"
+          className="knopf knopf-kontur bg-white px-4 py-2 text-[13px]"
         >
           Beleg hochladen
         </button>
       </div>
 
       {/* Postfach-Hinweis */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-brand-50/70 px-5 py-4">
+      <div className="tile tile-apricot flex flex-wrap items-center justify-between gap-3 px-5 py-4">
         <div>
-          <p className="text-[13px] font-semibold text-brand-900">
+          <p className="text-[13px] font-bold text-tile-apricot-ink">
             Ihr Beleg-Postfach
           </p>
-          <p className="tnum text-[14px] text-brand-800">
+          <p className="tnum text-[14px] text-ink">
             belege-sonnenweg@kontoklar.app
           </p>
         </div>
-        <p className="max-w-sm text-[12.5px] leading-relaxed text-brand-900/70">
+        <p className="max-w-sm text-[12.5px] leading-relaxed text-tile-apricot-ink">
           Rechnungen einfach dorthin weiterleiten (oder Lieferanten die Adresse
           geben) — E-Rechnungen werden strukturiert gelesen, PDFs per KI.
         </p>
@@ -86,14 +86,14 @@ export default function BelegeSeite() {
         {BELEGE.map((b) => (
           <li
             key={b.nr + b.lieferant}
-            className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-2xl border border-sand-200 bg-white px-5 py-4 shadow-sm"
+            className="tile flex flex-wrap items-center gap-x-5 gap-y-2 px-5 py-4"
           >
             <div className="min-w-0 flex-1">
               <p className="flex flex-wrap items-center gap-2">
                 <span className="truncate text-[14.5px] font-semibold text-sand-900">
                   {b.lieferant}
                 </span>
-                <span className="rounded-md bg-sand-100 px-1.5 py-0.5 text-[10.5px] font-bold uppercase tracking-wide text-sand-500">
+                <span className="rounded-full bg-sand-100 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wide text-sand-500">
                   {b.art}
                 </span>
               </p>
@@ -117,7 +117,7 @@ export default function BelegeSeite() {
             ) : (
               <button
                 type="button"
-                className="shrink-0 rounded-xl bg-brand-700 px-3.5 py-2 text-[12.5px] font-semibold text-white transition hover:bg-brand-800"
+                className="knopf knopf-primaer shrink-0 px-3.5 py-2 text-[12.5px]"
               >
                 Prüfen
               </button>
