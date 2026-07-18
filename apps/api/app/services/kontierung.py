@@ -25,7 +25,7 @@ from sqlalchemy.orm import Session
 from app.models.bank import BankKonto, BankTransaktion
 from app.models.fibu import Journal, OposPosten, PartnerRegel, Personenkonto
 from app.models.org import Org
-from app.services import history
+from app.services import einstellungen, history
 from app.services.chart_profile import ChartProfile, get_profile
 
 _LOHN_MUSTER = re.compile(r"lohn|gehalt", re.IGNORECASE)
@@ -54,6 +54,7 @@ def propose(db: Session, org_id: int, *, force: bool = False) -> dict:
     if org is None:
         raise ValueError("Org nicht gefunden")
     prof = get_profile(org.chart)
+    est = einstellungen.fuer_org(db, org_id)
 
     regeneriert = 0
     if force:
@@ -117,7 +118,8 @@ def propose(db: Session, org_id: int, *, force: bool = False) -> dict:
                 continue
 
         # 2) Kostenträger-Modus: bekannter Debitor ⇒ Bank an Personenkonto.
-        if prof.einnahme_auf_personenkonto and einnahme and partner is not None:
+        if (est.kostentraeger_modus and prof.einnahme_auf_personenkonto
+                and einnahme and partner is not None):
             _add(db, org_id, tx, soll=bank, haben=partner.nummer, bank_sachkonto=bank,
                  origin="kostentraeger", conf=history.CONF_SICHER, text=text,
                  begruendung=f"Debitor-Zahlung auf Personenkonto {partner.nummer} "
@@ -145,7 +147,7 @@ def propose(db: Session, org_id: int, *, force: bool = False) -> dict:
         if gelernt is not None:
             konto, n = gelernt
             soll, haben = (bank, konto) if einnahme else (konto, bank)
-            sicher = n >= history.LEARN_AUTO_MIN
+            sicher = n >= est.lern_schwelle
             _add(db, org_id, tx, soll=soll, haben=haben, bank_sachkonto=bank,
                  origin="regel" if sicher else "historie",
                  conf=history.CONF_SICHER if sicher else history.CONF_HISTORIE,
@@ -158,7 +160,7 @@ def propose(db: Session, org_id: int, *, force: bool = False) -> dict:
             continue
 
         # 5) Zweck-Muster: Lohn/Gehalt (Ausgang) → Lohn-Verbindlichkeit.
-        if (not einnahme and prof.lohn_verbindlichkeit
+        if (est.lohn_muster_aktiv and not einnahme and prof.lohn_verbindlichkeit
                 and _LOHN_MUSTER.search(f"{tx.zweck} {tx.name}")):
             _add(db, org_id, tx, soll=prof.lohn_verbindlichkeit, haben=bank,
                  bank_sachkonto=bank, origin="regel", conf=history.CONF_SICHER,
@@ -170,7 +172,8 @@ def propose(db: Session, org_id: int, *, force: bool = False) -> dict:
             continue
 
         # 6) Fallback (Prüfliste, nie automatisch).
-        konto = prof.fallback_erloes if einnahme else prof.fallback_aufwand
+        konto = ((est.fallback_erloes or prof.fallback_erloes) if einnahme
+                 else (est.fallback_aufwand or prof.fallback_aufwand))
         soll, haben = (bank, konto) if einnahme else (konto, bank)
         bu = prof.bu_default_einnahme if einnahme else prof.bu_default_ausgabe
         _add(db, org_id, tx, soll=soll, haben=haben, bank_sachkonto=bank,

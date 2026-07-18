@@ -144,3 +144,58 @@ Mechanik:
 
 *Prototyp-Status: `/kanzlei` (Cockpit mit Beispiel-Mandaten + Rückfragen-Idee)
 ist als klickbares Mockup umgesetzt — siehe `docs/mockups/kanzlei.png`.*
+
+---
+
+## U5 — Einstellungen für den Buchungsalgorithmus (Recherche + Spec, 18.07.)
+
+### Was der Markt macht (Recherche-Befund)
+
+| Anbieter | Ansatz | Schwäche |
+|---|---|---|
+| BuchhaltungsButler | Explizite Wenn/Dann-Automatisierungsregeln unter „Einstellungen"; zwei Wirkstärken (direkt kontieren vs. nur Vorschlag); Regeln greifen nur auf neue Importe | Regeln sind reine Handarbeit; keine Vorschau, was eine Regel bewirken WÜRDE |
+| DATEV Automatisierungsservice Bank | Pro Mandant ein Aktivierungs-Schalter; Qualität als Ampel/Glühlampen-Symbole; Reihenfolge Lerndatei→OPOS→KI fest | Kein Nutzer-Tuning; Kanzlei-only; Black-Box |
+| lexoffice / sevdesk | Kategorie-Lernen unsichtbar im Hintergrund | Nicht steuerbar, nicht erklärbar — Vertrauensproblem bei GmbH-Fibu |
+
+**Lücke = unser USP: Jede Einstellung zeigt ihre Folge in Zahlen, bevor man sie speichert.**
+Niemand im Markt beantwortet „Was würde passieren, wenn ich mutiger schalte?" — wir können
+das billig (Autopilot-Dry-Run je Stufe über die offene Prüfliste).
+
+### Onboarding-Prinzipien (Best-Practice-Recherche)
+1. **3–7 Schritte, alles überspringbar** — gute Defaults statt Pflichtfragen; Details
+   später unter Einstellungen (Progressive Disclosure).
+2. **Time-to-Value < 15 min**: Der CSV-Import bleibt der Magic Moment; der Wizard darf
+   ihn nur vorbereiten (personalisierte Defaults), nie verzögern.
+3. **Personalisierung schlägt Generik**: 2 Fachfragen (Kostenträger? Personal?) statt
+   20 Formularfelder — daraus leiten sich die Algorithmus-Defaults ab.
+4. **Beweis vor Behauptung** (unser Designprinzip): Stufen-Wahl mit Live-Simulation,
+   Not-Aus sichtbar → Vertrauen durch Kontrolle statt durch Versprechen.
+
+### Die Einstellungen (org_einstellung, 1:1 zur Org)
+
+| Einstellung | Default | Wirkung im Algorithmus |
+|---|---|---|
+| `autopilot_stufe` (Org) | ausgewogen | vorsichtig = nur OPOS+Kostenträger · ausgewogen = +Regeln/Muster ≥0,90 · mutig = +Historie ≥0,75 |
+| `lern_schwelle` | 3 | Nach N gleichen manuellen Bestätigungen desselben Partners→Konto bucht der Autopilot künftig selbst |
+| `kostentraeger_modus` | an | Einnahme von bekanntem Debitor ⇒ „Bank an Personenkonto" (Pflege-Kern); aus = klassisch über Erlöskonto |
+| `lohn_muster_aktiv` | an | Lohn/Gehalt-Ausgaben per Textmuster aufs Personalaufwandskonto |
+| `fallback_erloes` / `fallback_aufwand` | aus ChartProfile | Wohin unerkannte Umsätze VORGESCHLAGEN werden (nie automatisch!) |
+| DATEV Berater-/Mandanten-Nr (Org) | leer | EXTF-Kopf; ohne Nummern trägt der Export Platzhalter |
+
+Dazu: **Partner-Regeln-Verwaltung** (Liste mit Wirkungszahl „hat N Buchungen erledigt",
+Aktiv-Schalter, Konto ändern, neue Regel anlegen) und **Not-Aus** (letzten
+Autopilot-Lauf zurückholen, Anzahl sichtbar).
+
+### UX-Umsetzung
+1. **Onboarding-Wizard `/app/start`** (nach Registrierung, 3 Schritte, je überspringbar):
+   ① „Ihr Geschäft" — Kostenträger-Abrechnung? Mitarbeitende? (setzt kostentraeger_modus,
+   lohn_muster_aktiv) → ② Autopilot-Stufe (3 Karten, Empfehlung markiert) → ③ Steuerkanzlei
+   (DATEV-Nummern, optional) → weiter zum Bank-Import.
+2. **`/app/einstellungen`** mit Sektionen Autopilot (Stufen-Karten + **Simulation:
+   „würde jetzt X von Y offenen buchen"** + Not-Aus), Buchungslogik (Lern-Schwelle,
+   Toggles, Fallback-Konten), Regeln (Tabelle), Stammdaten (DATEV-Nummern, Bankkonten).
+3. Jede Änderung wird auditiert (wer, was, wann) — Kanzlei-Rolle darf lesen, nicht schreiben.
+
+Quellen: BuchhaltungsButler-Wissensdatenbank (Automatisierungsregeln), datev.de
+(Automatisierungsservice Bank + Fachbeitrag), Appcues/UXCam/DesignRevision-Onboarding-
+Benchmarks 2025/26.

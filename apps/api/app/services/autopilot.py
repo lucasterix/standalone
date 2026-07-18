@@ -56,6 +56,23 @@ def run(db: Session, org_id: int, *, dry_run: bool = False) -> dict:
             "dry_run": dry_run}
 
 
+def simulation(db: Session, org_id: int) -> dict:
+    """Was WUERDE jede Stufe jetzt buchen? Zahlen statt Behauptung —
+    Grundlage der Stufen-Wahl in den Einstellungen (kein Schreiben!)."""
+    offene = db.scalars(
+        select(Journal).where(
+            Journal.org_id == org_id, Journal.status == "vorgeschlagen"
+        )
+    ).all()
+    return {
+        "offen": len(offene),
+        "stufen": {
+            stufe: sum(1 for j in offene if _erlaubt(j, stufe))
+            for stufe in ("vorsichtig", "ausgewogen", "mutig")
+        },
+    }
+
+
 def revert(db: Session, org_id: int) -> int:
     """Alle Auto-Bestätigungen zurück auf ``vorgeschlagen`` (Not-Aus).
     Bereits exportierte (``gebucht``) bleiben unangetastet."""

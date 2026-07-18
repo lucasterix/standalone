@@ -37,7 +37,7 @@ export default function Registrieren() {
         org_chart: chart,
       });
       setSession(r.org_id);
-      router.push("/app/import/");
+      router.push("/app/start/");
     } catch (err) {
       setFehler(err instanceof Error ? err.message : "Registrierung fehlgeschlagen");
     } finally {
@@ -69,8 +69,8 @@ export default function Registrieren() {
             Kostenlos starten
           </h1>
           <p className="mt-1 text-[13.5px] text-sand-600">
-            Konto + Unternehmen anlegen — danach direkt den ersten
-            Kontoauszug hochladen.
+            Konto + Unternehmen anlegen — danach stellt sich der
+            Buchungsalgorithmus mit zwei Fragen auf Sie ein.
           </p>
 
           <label className="mt-5 block">

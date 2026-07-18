@@ -12,7 +12,7 @@ from fastapi import (
     Body, Depends, FastAPI, HTTPException, Query, Response, UploadFile,
 )
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session as DbSession
 
 from app.api.auth_routes import router as auth_router
@@ -22,9 +22,12 @@ from app.core.auth import OrgZugriff, current_user, org_zugriff, require_org
 from app.core.settings import settings
 from app.db import Base, engine, get_db
 from app.models.bank import BankKonto
-from app.models.fibu import DatevStapel, Journal, Personenkonto
+from app.models.fibu import DatevStapel, Journal, PartnerRegel, Personenkonto
 from app.models.org import Org, OrgMember, User
-from app.services import audit, autopilot, csv_import, extf, kontierung, saldenabgleich
+from app.services import (
+    audit, autopilot, csv_import, einstellungen, extf, kontierung,
+    saldenabgleich,
+)
 from app.services.chart_profile import get_profile
 from app.services.history import name_key, norm
 from app.services.skr_seed import seed_kontenrahmen
@@ -329,6 +332,181 @@ def autopilot_run(
                   aktion="autopilot.run", details=res)
         db.commit()
     return res
+
+
+# --------------------------------------------------------------------------- #
+# Einstellungen des Buchungsalgorithmus + Simulation + Regeln
+# --------------------------------------------------------------------------- #
+class EinstellungenIn(BaseModel):
+    autopilot_stufe: str | None = None
+    lern_schwelle: int | None = None
+    kostentraeger_modus: bool | None = None
+    lohn_muster_aktiv: bool | None = None
+    fallback_erloes: str | None = None
+    fallback_aufwand: str | None = None
+    datev_berater_nr: str | None = None
+    datev_mandant_nr: str | None = None
+
+
+def _einstellungen_dict(z: OrgZugriff, est) -> dict:
+    prof = get_profile(z.org.chart)
+    return {
+        "autopilot_stufe": z.org.autopilot_stufe,
+        "lern_schwelle": est.lern_schwelle,
+        "kostentraeger_modus": est.kostentraeger_modus,
+        "lohn_muster_aktiv": est.lohn_muster_aktiv,
+        "fallback_erloes": est.fallback_erloes,
+        "fallback_aufwand": est.fallback_aufwand,
+        "fallback_erloes_default": prof.fallback_erloes,
+        "fallback_aufwand_default": prof.fallback_aufwand,
+        "datev_berater_nr": z.org.datev_berater_nr,
+        "datev_mandant_nr": z.org.datev_mandant_nr,
+        "chart": z.org.chart,
+    }
+
+
+@app.get("/orgs/{org_id}/einstellungen")
+def einstellungen_lesen(
+    org_id: int, z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
+) -> dict:
+    est = einstellungen.fuer_org(db, org_id)
+    db.commit()
+    return _einstellungen_dict(z, est)
+
+
+@app.patch("/orgs/{org_id}/einstellungen")
+def einstellungen_aendern(
+    org_id: int, body: EinstellungenIn,
+    z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
+) -> dict:
+    if z.rolle == "kanzlei":
+        raise HTTPException(403, "Einstellungen ändert nur das Unternehmen")
+    est = einstellungen.fuer_org(db, org_id)
+    daten = body.model_dump(exclude_unset=True)
+    if "autopilot_stufe" in daten:
+        if daten["autopilot_stufe"] not in ("vorsichtig", "ausgewogen", "mutig"):
+            raise HTTPException(400, "Unbekannte Autopilot-Stufe")
+        z.org.autopilot_stufe = daten.pop("autopilot_stufe")
+    if "lern_schwelle" in daten:
+        n = daten.pop("lern_schwelle")
+        if not 1 <= n <= 10:
+            raise HTTPException(400, "Lern-Schwelle: 1 bis 10")
+        est.lern_schwelle = n
+    for feld in ("fallback_erloes", "fallback_aufwand"):
+        if feld in daten:
+            wert = (daten.pop(feld) or "").strip() or None
+            if wert is not None and not (wert.isdigit() and len(wert) == 4):
+                raise HTTPException(400, f"{feld}: 4-stelliges Sachkonto oder leer")
+            setattr(est, feld, wert)
+    for feld in ("kostentraeger_modus", "lohn_muster_aktiv"):
+        if feld in daten:
+            setattr(est, feld, bool(daten.pop(feld)))
+    for feld in ("datev_berater_nr", "datev_mandant_nr"):
+        if feld in daten:
+            setattr(z.org, feld, (daten.pop(feld) or "").strip() or None)
+    audit.log(db, org_id=org_id, user_id=z.user.id,
+              aktion="einstellungen.geaendert",
+              details=body.model_dump(exclude_unset=True))
+    db.commit()
+    return _einstellungen_dict(z, est)
+
+
+@app.get("/orgs/{org_id}/autopilot/simulation")
+def autopilot_simulation(
+    org_id: int, z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
+) -> dict:
+    return autopilot.simulation(db, org_id)
+
+
+@app.get("/orgs/{org_id}/regeln")
+def regeln_liste(
+    org_id: int, z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
+) -> list[dict]:
+    pks = {p.id: p for p in db.scalars(
+        select(Personenkonto).where(Personenkonto.org_id == org_id)
+    )}
+    out = []
+    for r in db.scalars(
+        select(PartnerRegel).where(PartnerRegel.org_id == org_id)
+    ):
+        pk = pks.get(r.personenkonto_id)
+        gebucht = db.scalar(
+            select(func.count(Journal.id)).where(
+                Journal.org_id == org_id,
+                Journal.partner_nr == (pk.nummer if pk else None),
+                Journal.origin == "regel",
+                Journal.status.in_(("bestaetigt", "gebucht")),
+            )
+        ) or 0
+        out.append({
+            "id": r.id, "konto": r.konto, "aktiv": r.aktiv, "quelle": r.quelle,
+            "partner": pk.name if pk else "?",
+            "partner_nr": pk.nummer if pk else None,
+            "gebucht": gebucht,
+        })
+    out.sort(key=lambda x: -x["gebucht"])
+    return out
+
+
+class RegelIn(BaseModel):
+    personenkonto_id: int
+    konto: str
+
+
+@app.post("/orgs/{org_id}/regeln")
+def regel_anlegen(
+    org_id: int, body: RegelIn,
+    z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
+) -> dict:
+    if z.rolle == "kanzlei":
+        raise HTTPException(403, "Regeln ändert nur das Unternehmen")
+    pk = db.get(Personenkonto, body.personenkonto_id)
+    if pk is None or pk.org_id != org_id:
+        raise HTTPException(404, "Personenkonto nicht gefunden")
+    if not (body.konto.isdigit() and len(body.konto) == 4):
+        raise HTTPException(400, "Konto: 4-stelliges Sachkonto")
+    vorhanden = db.scalar(select(PartnerRegel).where(
+        PartnerRegel.org_id == org_id,
+        PartnerRegel.personenkonto_id == pk.id,
+    ))
+    if vorhanden is not None:
+        vorhanden.konto = body.konto
+        vorhanden.aktiv = True
+    else:
+        db.add(PartnerRegel(org_id=org_id, personenkonto_id=pk.id,
+                            konto=body.konto, quelle="manuell"))
+    audit.log(db, org_id=org_id, user_id=z.user.id, aktion="regel.angelegt",
+              details={"partner": pk.nummer, "konto": body.konto})
+    db.commit()
+    return {"ok": True}
+
+
+class RegelPatch(BaseModel):
+    aktiv: bool | None = None
+    konto: str | None = None
+
+
+@app.patch("/regeln/{regel_id}")
+def regel_aendern(
+    regel_id: int, body: RegelPatch,
+    user: User = Depends(current_user), db: DbSession = Depends(get_db),
+) -> dict:
+    r = db.get(PartnerRegel, regel_id)
+    if r is None:
+        raise HTTPException(404, "Regel nicht gefunden")
+    z = org_zugriff(r.org_id, user, db)
+    if z.rolle == "kanzlei":
+        raise HTTPException(403, "Regeln ändert nur das Unternehmen")
+    if body.aktiv is not None:
+        r.aktiv = body.aktiv
+    if body.konto is not None:
+        if not (body.konto.isdigit() and len(body.konto) == 4):
+            raise HTTPException(400, "Konto: 4-stelliges Sachkonto")
+        r.konto = body.konto
+    audit.log(db, org_id=r.org_id, user_id=user.id, aktion="regel.geaendert",
+              details={"regel": r.id, **body.model_dump(exclude_unset=True)})
+    db.commit()
+    return {"ok": True}
 
 
 @app.post("/orgs/{org_id}/autopilot/revert")

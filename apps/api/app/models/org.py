@@ -30,6 +30,28 @@ class Org(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
 
+class OrgEinstellung(Base):
+    """Einstellungen des Buchungsalgorithmus (1:1 zur Org, lazy angelegt).
+
+    Eigene Tabelle statt Org-Spalten: create_all legt sie auf Bestands-
+    Systemen einfach an (kein ALTER TABLE noetig, solange es kein Alembic gibt).
+    """
+
+    __tablename__ = "org_einstellung"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    org_id: Mapped[int] = mapped_column(ForeignKey("org.id"), nullable=False, unique=True)
+    # Nach N gleichen Bestaetigungen Partner->Konto bucht der Autopilot selbst.
+    lern_schwelle: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
+    # Einnahme von bekanntem Debitor => Bank an Personenkonto (Pflege-Kern).
+    kostentraeger_modus: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    # Lohn/Gehalt-Textmuster auf das Lohn-Verbindlichkeitskonto.
+    lohn_muster_aktiv: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    # Ziel unerkannter Umsaetze (nur Vorschlag, NIE automatisch); leer = ChartProfile.
+    fallback_erloes: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    fallback_aufwand: Mapped[str | None] = mapped_column(String(8), nullable=True)
+
+
 class User(Base):
     __tablename__ = "app_user"
 

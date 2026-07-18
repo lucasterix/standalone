@@ -14,6 +14,7 @@ const NAV = [
   { href: "/app/pruefliste", label: "Prüfliste", icon: "☑" },
   { href: "/app/import", label: "Bank-Import", icon: "⇣" },
   { href: "/app/datev", label: "DATEV", icon: "⇪" },
+  { href: "/app/einstellungen", label: "Einstellungen", icon: "⚙" },
 ];
 
 export default function AppLayout({
