@@ -7,6 +7,7 @@ services:
     restart: unless-stopped
     environment:
       KK_DATABASE_URL: postgresql+psycopg2://kontoklar:${KK_DB_PASSWORT}@kontoklar_db:5432/kontoklar
+      KK_CREATE_ALL_ON_STARTUP: "0"
     depends_on:
       kontoklar_db:
         condition: service_healthy

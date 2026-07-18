@@ -13,7 +13,7 @@ from app.core.auth import OrgZugriff, current_user, org_zugriff, require_org
 from app.db import get_db
 from app.models.bank import BankTransaktion
 from app.models.fach import BelegDatei, Beleg, Klaerungsfall, Rueckfrage, RueckfrageNachricht
-from app.services import audit, belege as belege_service, vorjahr
+from app.services import audit, belege as belege_service, ki_beleg, vorjahr
 
 router = APIRouter(tags=["fach"])
 
@@ -69,6 +69,8 @@ async def beleg_upload(
         raise HTTPException(400, "Bitte PDF, JPG oder PNG hochladen")
 
     ex = belege_service.extrahiere(inhalt, mime)
+    if not ex and mime.startswith("image/"):
+        ex = ki_beleg.lese_bild(inhalt, mime)
     # Nutzer-Angaben schlagen Extraktion (der Mensch weiß es besser).
     if betrag:
         try:
@@ -85,6 +87,7 @@ async def beleg_upload(
         org_id=org_id, quelle="upload",
         art="pdf" if "pdf" in mime else "foto",
         datei_name=datei.filename,
+        lieferant=ex.get("lieferant"),
         rechnungs_nr=ex.get("rechnungs_nr"),
         rechnungs_datum=ex.get("datum"),
         betrag_brutto=ex.get("betrag"),

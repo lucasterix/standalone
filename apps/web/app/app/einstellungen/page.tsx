@@ -23,6 +23,11 @@ type Einstellungen = {
 
 type Simulation = { offen: number; stufen: Record<string, number> };
 
+type Verbindung = {
+  konfiguriert: boolean; status: string; iban: string | null;
+  bank: string | null; gueltig_bis: string | null; letzter_sync: string | null;
+};
+
 type Regel = {
   id: number; konto: string; aktiv: boolean; quelle: string;
   partner: string; partner_nr: string | null; gebucht: number;
@@ -51,6 +56,8 @@ export default function EinstellungenSeite() {
   const [est, setEst] = useState<Einstellungen | null>(null);
   const [sim, setSim] = useState<Simulation | null>(null);
   const [regeln, setRegeln] = useState<Regel[] | null>(null);
+  const [verbindung, setVerbindung] = useState<Verbindung | null>(null);
+  const [bankName, setBankName] = useState("");
   const [fehler, setFehler] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -60,8 +67,52 @@ export default function EinstellungenSeite() {
     api.get<Einstellungen>(`/orgs/${org}/einstellungen`).then(setEst).catch((e) => setFehler(e.message));
     api.get<Simulation>(`/orgs/${org}/autopilot/simulation`).then(setSim).catch(() => null);
     api.get<Regel[]>(`/orgs/${org}/regeln`).then(setRegeln).catch(() => setRegeln([]));
+    api.get<Verbindung>(`/orgs/${org}/bank/verbindung`).then(setVerbindung).catch(() => null);
   }, []);
   useEffect(laden, [laden]);
+
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const code = p.get("code");
+    const state = p.get("state");
+    const org = getOrgId();
+    if (!code || !state || !org) return;
+    window.history.replaceState(null, "", window.location.pathname);
+    api.post(`/orgs/${org}/bank/callback`, { code, state })
+      .then(() => {
+        setToast("Bank verbunden — Umsätze kommen ab jetzt automatisch.");
+        window.setTimeout(() => setToast(null), 4000);
+        laden();
+      })
+      .catch((e) => setFehler(e instanceof Error ? e.message : "Bank-Verbindung fehlgeschlagen"));
+  }, [laden]);
+
+  async function bankVerbinden() {
+    const org = getOrgId();
+    if (!org || !bankName.trim()) return;
+    setFehler(null);
+    try {
+      const r = await api.post<{ auth_url: string }>(`/orgs/${org}/bank/verbinden`,
+        { bank_name: bankName.trim() });
+      window.location.href = r.auth_url;
+    } catch (e) {
+      setFehler(e instanceof Error ? e.message : "Fehler");
+    }
+  }
+
+  async function bankSync() {
+    const org = getOrgId();
+    if (!org) return;
+    setFehler(null);
+    try {
+      const r = await api.post<{ neu: number; auto_gebucht: number }>(`/orgs/${org}/bank/sync`);
+      setToast(`${r.neu} neue Umsätze geholt, ${r.auto_gebucht} automatisch gebucht.`);
+      window.setTimeout(() => setToast(null), 4000);
+      laden();
+    } catch (e) {
+      setFehler(e instanceof Error ? e.message : "Fehler");
+    }
+  }
 
   async function speichern(patch: Partial<Einstellungen>, meldung = "Gespeichert.") {
     const org = getOrgId();
@@ -319,6 +370,57 @@ export default function EinstellungenSeite() {
           <p className="mt-3 text-[13px] font-medium text-tile-lavender-ink/80">
             Noch keine Regeln — bestätigen Sie in der Prüfliste mit „künftig immer so buchen".
           </p>
+        )}
+      </section>
+
+      {/* Bankverbindung (PSD2) */}
+      <section className={KARTE}>
+        <h2 className={H2}>Bankverbindung</h2>
+        {verbindung == null ? (
+          <p className="mt-2 text-[13px] text-ink-soft">Lade …</p>
+        ) : !verbindung.konfiguriert ? (
+          <p className="mt-2 text-[13.5px] leading-relaxed text-ink-soft">
+            Der automatische Bank-Abruf (PSD2) wird gerade freigeschaltet —
+            bis dahin ist der <a href="/app/import/" className="font-semibold text-brand-700 underline">CSV-Import</a>{" "}
+            der Weg. Sobald die Zugangsdaten hinterlegt sind, erscheint hier
+            der „Bank verbinden“-Knopf von selbst.
+          </p>
+        ) : verbindung.status === "aktiv" ? (
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <span className="chip chip-mint">verbunden</span>
+            <span className="text-[13.5px] font-semibold text-ink">
+              {verbindung.bank} <span className="tnum text-ink-soft">{verbindung.iban}</span>
+            </span>
+            {verbindung.letzter_sync && (
+              <span className="text-[12px] text-sand-500">
+                zuletzt {verbindung.letzter_sync.slice(0, 16).replace("T", " ")}
+              </span>
+            )}
+            <button type="button" onClick={bankSync}
+              className="knopf knopf-primaer px-4 py-2 text-[13px]">
+              Jetzt synchronisieren
+            </button>
+          </div>
+        ) : (
+          <div className="mt-3 flex flex-wrap items-center gap-2.5">
+            {verbindung.status === "abgelaufen" && (
+              <span className="chip chip-apricot">Zugriff abgelaufen — bitte neu verbinden</span>
+            )}
+            <input
+              value={bankName}
+              onChange={(e) => setBankName(e.target.value)}
+              placeholder="Name Ihrer Bank, z. B. Sparkasse Flensburg"
+              className="min-w-[260px] flex-1 rounded-2xl border border-sand-300 bg-white px-4 py-2.5 text-[13.5px] focus:border-brand-600 focus:outline-none"
+            />
+            <button type="button" disabled={!bankName.trim()} onClick={bankVerbinden}
+              className="knopf knopf-primaer px-5 py-2.5 text-[13.5px] disabled:opacity-40">
+              Bank verbinden →
+            </button>
+            <p className="w-full text-[12px] text-sand-500">
+              Sie werden zum Login Ihrer Bank weitergeleitet (PSD2-Freigabe,
+              90 Tage gültig) — Kontoklar sieht Ihre Zugangsdaten nie.
+            </p>
+          </div>
         )}
       </section>
 

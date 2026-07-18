@@ -19,6 +19,8 @@ const STATUS_FILTER = [
   { key: "abgelehnt", label: "Abgelehnt" },
 ];
 
+const OHNE_BELEG_KEY = "__ohne_beleg";
+
 function ViaBadge({ j }: { j: JournalZeile }) {
   if (j.status === "gebucht") {
     return <span className="chip bg-sand-100 text-sand-600">🔒 DATEV</span>;
@@ -50,7 +52,8 @@ export default function Buchungen() {
     const org = getOrgId();
     if (!org) return;
     const p = new URLSearchParams({ limit: "1000", jahr: String(JAHR) });
-    if (status) p.set("status", status);
+    if (status === OHNE_BELEG_KEY) p.set("ohne_beleg", "true");
+    else if (status) p.set("status", status);
     if (monat) p.set("monat", String(monat));
     if (suche.trim()) p.set("suche", suche.trim());
     api.get<JournalZeile[]>(`/orgs/${org}/journal?${p}`)
@@ -92,7 +95,7 @@ export default function Buchungen() {
       {/* Filter-Zeile */}
       <div className="tile flex flex-wrap items-center gap-3 p-4">
         <div className="flex flex-wrap gap-1.5">
-          {STATUS_FILTER.map((f) => (
+          {[...STATUS_FILTER, { key: OHNE_BELEG_KEY, label: "Ohne Beleg 📎" }].map((f) => (
             <button
               key={f.key}
               type="button"

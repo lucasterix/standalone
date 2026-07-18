@@ -596,10 +596,10 @@ function Footer() {
         <Wordmark />
         <p>{BRAND.claim}</p>
         <div className="flex gap-5">
-          <a href="#" className="hover:text-sand-900">
+          <a href="/impressum/" className="hover:text-sand-900">
             Impressum
           </a>
-          <a href="#" className="hover:text-sand-900">
+          <a href="/datenschutz/" className="hover:text-sand-900">
             Datenschutz
           </a>
         </div>

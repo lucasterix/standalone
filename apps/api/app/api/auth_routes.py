@@ -92,9 +92,11 @@ def login(
     user_agent: str | None = Header(default=None, alias="User-Agent"),
     db: DbSession = Depends(get_db),
 ) -> dict:
+    _rate_limit(f"login:{body.email.lower()}")
     user = db.scalar(select(User).where(User.email == body.email.lower()))
     if user is None or not verify_password(body.passwort, user.password_hash):
         # Bewusst EINE Fehlermeldung für beide Fälle (kein User-Enumeration).
+        _fehlversuch(f"login:{body.email.lower()}")
         raise HTTPException(401, "E-Mail oder Passwort falsch.")
     if not user.aktiv:
         raise HTTPException(401, "Konto deaktiviert.")
@@ -135,3 +137,121 @@ def ich(user: User = Depends(current_user), db: DbSession = Depends(get_db)) -> 
         for m in db.scalars(select(OrgMember).where(OrgMember.user_id == user.id))
     ]
     return {"user_id": user.id, "email": user.email, "name": user.name, "orgs": orgs}
+
+
+# --------------------------------------------------------------------------- #
+# Härtung: Rate-Limit, Passwort ändern, Passwort-Reset (SMTP-gated)
+# --------------------------------------------------------------------------- #
+import os
+import smtplib
+import threading
+import time
+from email.mime.text import MIMEText
+
+from app.core.auth import current_user
+from app.models.auth import PasswortReset
+
+_limiter_lock = threading.Lock()
+_versuche: dict[str, list[float]] = {}
+_LIMIT_N, _LIMIT_FENSTER = 10, 900  # 10 Fehlversuche / 15 min
+
+
+def _rate_limit(schluessel: str) -> None:
+    jetzt = time.time()
+    with _limiter_lock:
+        liste = [t for t in _versuche.get(schluessel, []) if jetzt - t < _LIMIT_FENSTER]
+        if len(liste) >= _LIMIT_N:
+            _versuche[schluessel] = liste
+            raise HTTPException(
+                429, "Zu viele Fehlversuche — bitte 15 Minuten warten.")
+        _versuche[schluessel] = liste
+
+
+def _fehlversuch(schluessel: str) -> None:
+    with _limiter_lock:
+        _versuche.setdefault(schluessel, []).append(time.time())
+
+
+class PasswortAendernIn(BaseModel):
+    aktuelles: str
+    neues: str
+
+
+@router.post("/passwort-aendern")
+def passwort_aendern(
+    body: PasswortAendernIn,
+    user=Depends(current_user), db: DbSession = Depends(get_db),
+) -> dict:
+    if not verify_password(body.aktuelles, user.password_hash):
+        raise HTTPException(403, "Aktuelles Passwort stimmt nicht")
+    if len(body.neues) < 10:
+        raise HTTPException(400, "Neues Passwort: mindestens 10 Zeichen")
+    user.password_hash = hash_password(body.neues)
+    # Alle anderen Sitzungen beenden (Passwortwechsel = Sicherheitsereignis).
+    db.execute(delete(Session).where(Session.user_id == user.id))
+    db.commit()
+    return {"ok": True, "hinweis": "Bitte neu anmelden."}
+
+
+class VergessenIn(BaseModel):
+    email: EmailStr
+
+
+@router.post("/passwort-vergessen")
+def passwort_vergessen(body: VergessenIn, db: DbSession = Depends(get_db)) -> dict:
+    """Antwort ist IMMER gleich (keine User-Enumeration). Versand nur mit
+    konfiguriertem SMTP (KK_SMTP_HOST/USER/PASS) — sonst landet der Token
+    im Server-Log für den Admin-Weg."""
+    _rate_limit(f"reset:{body.email.lower()}")
+    _fehlversuch(f"reset:{body.email.lower()}")
+    user = db.scalar(select(User).where(User.email == body.email.lower()))
+    if user is not None:
+        token, thash = new_session_token()
+        db.add(PasswortReset(
+            user_id=user.id, token_hash=thash,
+            expires_at=datetime.utcnow() + timedelta(hours=2),
+        ))
+        db.commit()
+        link = f"https://kontoklar.froehlichdienste.de/passwort-reset/?t={token}"
+        host = os.environ.get("KK_SMTP_HOST")
+        if host:
+            try:
+                msg = MIMEText(
+                    "Guten Tag,\n\nüber diesen Link setzen Sie Ihr "
+                    f"Kontoklar-Passwort zurück (2 Stunden gültig):\n{link}\n\n"
+                    "Falls Sie das nicht angefordert haben, ignorieren Sie "
+                    "diese Mail.", _charset="utf-8")
+                msg["Subject"] = "Kontoklar — Passwort zurücksetzen"
+                msg["From"] = os.environ.get("KK_SMTP_FROM", "kontoklar@froehlichdienste.de")
+                msg["To"] = user.email
+                with smtplib.SMTP(host, int(os.environ.get("KK_SMTP_PORT", "587"))) as s:
+                    s.starttls()
+                    s.login(os.environ["KK_SMTP_USER"], os.environ["KK_SMTP_PASS"])
+                    s.send_message(msg)
+            except Exception:
+                print(f"[reset] SMTP-Versand fehlgeschlagen, Link: {link}")
+        else:
+            print(f"[reset] Kein SMTP konfiguriert. Reset-Link für {user.email}: {link}")
+    return {"ok": True,
+            "hinweis": "Falls die Adresse existiert, ist eine Mail unterwegs."}
+
+
+class ResetIn(BaseModel):
+    token: str
+    neues: str
+
+
+@router.post("/passwort-reset")
+def passwort_reset(body: ResetIn, db: DbSession = Depends(get_db)) -> dict:
+    if len(body.neues) < 10:
+        raise HTTPException(400, "Neues Passwort: mindestens 10 Zeichen")
+    pr = db.scalar(select(PasswortReset).where(
+        PasswortReset.token_hash == token_hash(body.token)))
+    if pr is None or pr.verwendet or pr.expires_at < datetime.utcnow():
+        raise HTTPException(400, "Link ungültig oder abgelaufen")
+    user = db.get(User, pr.user_id)
+    user.password_hash = hash_password(body.neues)
+    pr.verwendet = True
+    db.execute(delete(Session).where(Session.user_id == user.id))
+    db.commit()
+    return {"ok": True}

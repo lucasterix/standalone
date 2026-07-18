@@ -1,7 +1,7 @@
 """Sessions + Kanzlei-Einladungen."""
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -32,3 +32,16 @@ class KanzleiEinladung(Base):
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="offen")  # offen|angenommen|abgelaufen
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+
+
+class PasswortReset(Base):
+    """Einmal-Token für Passwort-Zurücksetzen (nur als Hash gespeichert)."""
+
+    __tablename__ = "passwort_reset"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("app_user.id"), nullable=False, index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    verwendet: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)

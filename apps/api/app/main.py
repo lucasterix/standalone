@@ -24,12 +24,13 @@ from app.core.auth import OrgZugriff, current_user, org_zugriff, require_org
 from app.core.settings import settings
 from app.db import Base, engine, get_db
 from app.models.bank import BankKonto
+from app.models.bankverbindung import BankVerbindung
 from app.models.fach import Beleg
 from app.models.fibu import DatevStapel, Journal, PartnerRegel, Personenkonto
 from app.models.org import Org, OrgMember, User
 from app.services import (
-    audit, autopilot, csv_import, einstellungen, exporte, extf, kontierung,
-    saldenabgleich,
+    audit, autopilot, bank_sync, csv_import, einstellungen, exporte, extf,
+    kontierung, saldenabgleich,
 )
 from app.services.chart_profile import get_profile
 from app.services.history import name_key, norm
@@ -161,6 +162,81 @@ async def bank_upload(
 
 
 # --------------------------------------------------------------------------- #
+# Bank: PSD2-Verbindung (EnableBanking, env-gated)
+# --------------------------------------------------------------------------- #
+@app.get("/orgs/{org_id}/bank/verbindung")
+def bank_verbindung_status(
+    org_id: int, z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
+) -> dict:
+    v = db.scalar(select(BankVerbindung).where(BankVerbindung.org_id == org_id))
+    return {
+        "konfiguriert": bank_sync.konfiguriert(),
+        "status": v.status if v else "getrennt",
+        "iban": v.account_iban if v else None,
+        "bank": v.account_name if v else None,
+        "gueltig_bis": v.gueltig_bis.isoformat() if v and v.gueltig_bis else None,
+        "letzter_sync": v.letzter_sync.isoformat() if v and v.letzter_sync else None,
+    }
+
+
+class VerbindenIn(BaseModel):
+    bank_name: str
+    bank_land: str = "DE"
+
+
+@app.post("/orgs/{org_id}/bank/verbinden")
+def bank_verbinden(
+    org_id: int, body: VerbindenIn,
+    z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
+) -> dict:
+    if z.rolle == "kanzlei":
+        raise HTTPException(403, "Bankverbindung stellt nur das Unternehmen her")
+    if not bank_sync.konfiguriert():
+        raise HTTPException(503, "PSD2 noch nicht freigeschaltet — CSV-Import nutzen")
+    url = bank_sync.auth_starten(org_id, body.bank_name, body.bank_land)
+    audit.log(db, org_id=org_id, user_id=z.user.id, aktion="bank.verbinden",
+              details={"bank": body.bank_name})
+    db.commit()
+    return {"auth_url": url}
+
+
+class CallbackIn(BaseModel):
+    code: str
+    state: str
+
+
+@app.post("/orgs/{org_id}/bank/callback")
+def bank_callback(
+    org_id: int, body: CallbackIn,
+    z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
+) -> dict:
+    if bank_sync.state_pruefen(body.state) != org_id:
+        raise HTTPException(400, "State-Prüfung fehlgeschlagen")
+    v = bank_sync.session_erstellen(db, org_id, body.code)
+    audit.log(db, org_id=org_id, user_id=z.user.id, aktion="bank.verbunden",
+              details={"iban": v.account_iban})
+    db.commit()
+    return {"status": v.status, "iban": v.account_iban, "bank": v.account_name}
+
+
+@app.post("/orgs/{org_id}/bank/sync")
+def bank_sync_jetzt(
+    org_id: int, z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
+) -> dict:
+    try:
+        res = bank_sync.sync(db, org_id)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    prop = kontierung.propose(db, org_id)
+    auto = autopilot.run(db, org_id)
+    res.update({"vorgeschlagen": prop.get("neu", 0),
+                "auto_gebucht": auto.get("bestaetigt", 0)})
+    audit.log(db, org_id=org_id, user_id=z.user.id, aktion="bank.sync", details=res)
+    db.commit()
+    return res
+
+
+# --------------------------------------------------------------------------- #
 # Personenkonten
 # --------------------------------------------------------------------------- #
 class PersonenkontoIn(BaseModel):
@@ -235,6 +311,7 @@ def journal_liste(
     org_id: int, status: str | None = Query(None), limit: int = Query(200, le=1000),
     jahr: int | None = Query(None), monat: int | None = Query(None, ge=1, le=12),
     suche: str | None = Query(None, max_length=80),
+    ohne_beleg: bool = Query(False),
     z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
 ) -> list[dict]:
     q = select(Journal).where(Journal.org_id == org_id)
@@ -271,7 +348,7 @@ def journal_liste(
         if j.haben in bank_konten:
             return "ausgabe"
         return "neutral"
-    return [
+    ergebnis = [
         {
             "id": j.id, "datum": j.beleg_datum.isoformat(), "betrag": str(j.betrag),
             "richtung": _richtung(j),
@@ -284,6 +361,12 @@ def journal_liste(
         }
         for j in rows
     ]
+    if ohne_beleg:
+        # GoBD-Blick: bestätigte/gebuchte AUSGABEN ohne angehängten Beleg.
+        ergebnis = [r for r in ergebnis
+                    if r["richtung"] == "ausgabe" and not r["beleg"]
+                    and r["status"] in ("bestaetigt", "gebucht")]
+    return ergebnis
 
 
 def _journal_untertitel(jahr: int | None, monat: int | None,
@@ -304,7 +387,7 @@ def journal_export_csv(
     suche: str | None = Query(None, max_length=80),
     z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
 ) -> Response:
-    rows = journal_liste(org_id, status, 1000, jahr, monat, suche, z, db)
+    rows = journal_liste(org_id, status, 1000, jahr, monat, suche, False, z, db)
     audit.log(db, org_id=org_id, user_id=z.user.id, aktion="journal.export_csv",
               details={"saetze": len(rows)})
     db.commit()
@@ -321,7 +404,7 @@ def journal_export_pdf(
     suche: str | None = Query(None, max_length=80),
     z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
 ) -> Response:
-    rows = journal_liste(org_id, status, 1000, jahr, monat, suche, z, db)
+    rows = journal_liste(org_id, status, 1000, jahr, monat, suche, False, z, db)
     pdf = exporte.journal_pdf(z.org, rows, _journal_untertitel(jahr, monat, status))
     audit.log(db, org_id=org_id, user_id=z.user.id, aktion="journal.export_pdf",
               details={"saetze": len(rows)})
