@@ -230,11 +230,27 @@ def propose(
 @app.get("/orgs/{org_id}/journal")
 def journal_liste(
     org_id: int, status: str | None = Query(None), limit: int = Query(200, le=1000),
+    jahr: int | None = Query(None), monat: int | None = Query(None, ge=1, le=12),
+    suche: str | None = Query(None, max_length=80),
     z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
 ) -> list[dict]:
     q = select(Journal).where(Journal.org_id == org_id)
     if status:
         q = q.where(Journal.status == status)
+    if jahr:
+        q = q.where(Journal.jahr == jahr)
+    if monat and jahr:
+        von = date(jahr, monat, 1)
+        bis = date(jahr + (monat == 12), (monat % 12) + 1, 1)
+        q = q.where(Journal.beleg_datum >= von, Journal.beleg_datum < bis)
+    if suche:
+        muster = f"%{suche.strip()}%"
+        q = q.where(
+            Journal.partner_name.ilike(muster)
+            | Journal.text.ilike(muster)
+            | (Journal.soll == suche.strip())
+            | (Journal.haben == suche.strip())
+        )
     rows = db.scalars(q.order_by(Journal.beleg_datum.desc(), Journal.id.desc()).limit(limit))
     bank_konten = {
         k.sachkonto for k in db.scalars(
@@ -277,6 +293,10 @@ def journal_patch(
     if j is None:
         raise HTTPException(404, "Buchung nicht gefunden")
     z = org_zugriff(j.org_id, user, db)
+    if j.status == "gebucht":
+        raise HTTPException(
+            409, "In DATEV übernommen — änderbar nur per Storno/Korrektur "
+                 "über Ihre Kanzlei (Festschreibung).")
     prof = get_profile(z.org.chart)
     if body.konto:
         bank_konten = {
@@ -292,6 +312,7 @@ def journal_patch(
             raise HTTPException(400, "Buchung ohne Bank-Seite — Konto nicht änderbar")
         j.origin = "manuell"
         j.confidence = Decimal("1.00")
+        j.begruendung = f"Manuell korrigiert → Konto {body.konto}"
     if body.bu is not None:
         j.bu = body.bu
     if body.status:

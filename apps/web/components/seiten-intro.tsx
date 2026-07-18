@@ -56,6 +56,15 @@ const INTROS: Record<string, Intro> = {
       "Unter Partner-Regeln sehen Sie, was das System gelernt hat — jede Regel mit ihrer Wirkungszahl, jederzeit abschaltbar.",
     ],
   },
+  "/app/buchungen": {
+    titel: "Die Buchungen",
+    emoji: "📚",
+    punkte: [
+      "Alle Buchungen des Jahres — filterbar nach Status und Monat, durchsuchbar nach Partner, Zweck oder Konto.",
+      "Klick auf das Konto korrigiert das Gegenkonto nachträglich; die Bankseite bleibt fixiert.",
+      "In DATEV übernommene Sätze tragen ein Schloss — die ändert nur noch Ihre Kanzlei per Storno (Festschreibung).",
+    ],
+  },
   "/app/verkauf": {
     titel: "Der Verkauf",
     emoji: "🧾",

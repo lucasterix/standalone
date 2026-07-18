@@ -18,6 +18,7 @@ const NAV = [
   { href: "/app", label: "Übersicht", icon: "◧" },
   { href: "/app/pruefliste", label: "Prüfliste", icon: "☑" },
   { href: "/app/import", label: "Bank-Import", icon: "⇣" },
+  { href: "/app/buchungen", label: "Buchungen", icon: "≣" },
   { href: "/app/verkauf", label: "Verkauf", icon: "▤" },
   { href: "/app/datev", label: "DATEV", icon: "⇪" },
   { href: "/app/einstellungen", label: "Einstellungen", icon: "⚙" },

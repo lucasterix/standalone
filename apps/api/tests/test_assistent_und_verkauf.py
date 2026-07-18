@@ -112,3 +112,34 @@ def test_verkauf_angebot_rechnung_xrechnung(client):
     r = client.patch(f"/orgs/{org}/verkauf/{re_dok['id']}/status",
                      json={"status": "bezahlt"})
     assert r.json()["status"] == "bezahlt"
+
+
+def test_buchungsuebersicht_filter_und_gebucht_schutz(client):
+    org = _org(client, "uebersicht@test.example", "Übersicht GmbH")
+    client.patch(f"/orgs/{org}/einstellungen", json={"lohn_muster_aktiv": False})
+    csv = ("Buchungstag;Verwendungszweck;Name Zahlungsbeteiligter;IBAN;Betrag;Waehrung\n"
+           "05.06.2026;Miete;Vermieter X;DE10101010101010101010;-900,00;EUR\n"
+           "09.06.2026;Einnahme Alpha;Kunde Alpha;DE20202020202020202020;500,00;EUR\n")
+    client.post(f"/orgs/{org}/bank/upload",
+                files={"datei": ("u.csv", csv.encode(), "text/csv")})
+
+    # Filter: Monat + Suche
+    juni = client.get(f"/orgs/{org}/journal?jahr=2026&monat=6").json()
+    assert len(juni) == 2
+    treffer = client.get(f"/orgs/{org}/journal?jahr=2026&suche=Alpha").json()
+    assert len(treffer) == 1 and treffer[0]["partner"] == "Kunde Alpha"
+
+    # Beide entscheiden, Konto nachträglich ändern geht (bestaetigt)
+    for j in juni:
+        client.patch(f"/journal/{j['id']}", json={"status": "bestaetigt"})
+    r = client.patch(f"/journal/{juni[0]['id']}", json={"konto": "6310"})
+    assert r.status_code == 200
+
+    # Stapel + übernommen → Buchung ist eingefroren (409)
+    s = client.post(f"/orgs/{org}/datev/stapel",
+                    json={"von": "2026-06-01", "bis": "2026-06-30"}).json()
+    client.get(f"/datev/stapel/{s['id']}/extf")
+    client.post(f"/datev/stapel/{s['id']}/uebernommen")
+    r = client.patch(f"/journal/{juni[0]['id']}", json={"konto": "6320"})
+    assert r.status_code == 409
+    assert "DATEV" in r.json()["detail"]
