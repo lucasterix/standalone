@@ -5,7 +5,7 @@
    Sätze sind eingefroren (Festschreibungs-Logik) und tragen ein Schloss. */
 
 import { useCallback, useEffect, useState } from "react";
-import { api, datumKurz, euro, getOrgId, type JournalZeile } from "@/lib/client";
+import { api, datumKurz, downloadDatei, euro, getOrgId, type JournalZeile } from "@/lib/client";
 
 const JAHR = 2026;
 const MONATE = ["Alle", "Jan", "Feb", "Mär", "Apr", "Mai", "Jun",
@@ -129,6 +129,25 @@ export default function Buchungen() {
             {zeilen.length} Sätze · Saldo {euro(summe)}
           </span>
         )}
+        <span className="flex gap-1.5">
+          {(["csv", "pdf"] as const).map((fmt) => (
+            <button
+              key={fmt}
+              type="button"
+              title={`Aktuellen Filter als ${fmt.toUpperCase()} exportieren — der DATEV-freie Weg`}
+              onClick={() => {
+                const p = new URLSearchParams({ jahr: String(JAHR) });
+                if (status) p.set("status", status);
+                if (monat) p.set("monat", String(monat));
+                if (suche.trim()) p.set("suche", suche.trim());
+                downloadDatei(`/orgs/${getOrgId()}/journal/export.${fmt}?${p}`, `buchungsjournal.${fmt}`);
+              }}
+              className="knopf knopf-kontur px-3 py-1.5 text-[11.5px] uppercase"
+            >
+              {fmt} ↓
+            </button>
+          ))}
+        </span>
       </div>
 
       {fehler && (

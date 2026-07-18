@@ -27,7 +27,7 @@ from app.models.bank import BankKonto
 from app.models.fibu import DatevStapel, Journal, PartnerRegel, Personenkonto
 from app.models.org import Org, OrgMember, User
 from app.services import (
-    audit, autopilot, csv_import, einstellungen, extf, kontierung,
+    audit, autopilot, csv_import, einstellungen, exporte, extf, kontierung,
     saldenabgleich,
 )
 from app.services.chart_profile import get_profile
@@ -277,6 +277,52 @@ def journal_liste(
         }
         for j in rows
     ]
+
+
+def _journal_untertitel(jahr: int | None, monat: int | None,
+                        status: str | None) -> str:
+    teile = []
+    if monat and jahr:
+        teile.append(f"{monat:02d}/{jahr}")
+    elif jahr:
+        teile.append(str(jahr))
+    teile.append(status or "alle Status")
+    return " · ".join(teile)
+
+
+@app.get("/orgs/{org_id}/journal/export.csv")
+def journal_export_csv(
+    org_id: int, status: str | None = Query(None),
+    jahr: int | None = Query(None), monat: int | None = Query(None, ge=1, le=12),
+    suche: str | None = Query(None, max_length=80),
+    z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
+) -> Response:
+    rows = journal_liste(org_id, status, 1000, jahr, monat, suche, z, db)
+    audit.log(db, org_id=org_id, user_id=z.user.id, aktion="journal.export_csv",
+              details={"saetze": len(rows)})
+    db.commit()
+    return Response(
+        content=exporte.journal_csv(rows), media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="buchungsjournal.csv"'},
+    )
+
+
+@app.get("/orgs/{org_id}/journal/export.pdf")
+def journal_export_pdf(
+    org_id: int, status: str | None = Query(None),
+    jahr: int | None = Query(None), monat: int | None = Query(None, ge=1, le=12),
+    suche: str | None = Query(None, max_length=80),
+    z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
+) -> Response:
+    rows = journal_liste(org_id, status, 1000, jahr, monat, suche, z, db)
+    pdf = exporte.journal_pdf(z.org, rows, _journal_untertitel(jahr, monat, status))
+    audit.log(db, org_id=org_id, user_id=z.user.id, aktion="journal.export_pdf",
+              details={"saetze": len(rows)})
+    db.commit()
+    return Response(
+        content=pdf, media_type="application/pdf",
+        headers={"Content-Disposition": 'attachment; filename="buchungsjournal.pdf"'},
+    )
 
 
 class JournalPatch(BaseModel):

@@ -5,7 +5,7 @@
    Dort erscheint nur der eigene Firmenname. */
 
 import { useCallback, useEffect, useState } from "react";
-import { api, getOrgId } from "@/lib/client";
+import { api, downloadDatei, getOrgId } from "@/lib/client";
 
 type Einladung = {
   id: number; token: string; variante: string; notiz: string | null;
@@ -135,7 +135,16 @@ export default function Personal() {
 
       {/* Rücklauf */}
       <section className="tile p-6">
-        <h2 className="font-display text-lg font-semibold text-ink">Versendete Links</h2>
+        <div className="flex items-baseline justify-between">
+          <h2 className="font-display text-lg font-semibold text-ink">Versendete Links</h2>
+          {(liste ?? []).some((e) => e.status === "ausgefuellt") && (
+            <button type="button"
+              onClick={() => downloadDatei(`/orgs/${getOrgId()}/personal/export.csv`, "personal_alle.csv")}
+              className="text-[12.5px] font-bold text-brand-700 underline-offset-2 hover:underline">
+              Alle als CSV ↓
+            </button>
+          )}
+        </div>
         {liste == null ? (
           <p className="mt-3 text-[13.5px] text-ink-soft">Lade …</p>
         ) : liste.length === 0 ? (
@@ -176,11 +185,23 @@ export default function Personal() {
                       </>
                     )}
                     {e.status === "ausgefuellt" && (
-                      <button type="button"
-                        onClick={() => setOffenId(offenId === e.id ? null : e.id)}
-                        className="knopf knopf-primaer px-3.5 py-1.5 text-[12px]">
-                        {offenId === e.id ? "Zuklappen" : "Daten ansehen"}
-                      </button>
+                      <>
+                        <button type="button"
+                          onClick={() => downloadDatei(`/orgs/${getOrgId()}/personal/einladungen/${e.id}/pdf`, `Personalbogen_${e.mitarbeiter_name ?? e.id}.pdf`)}
+                          className="knopf knopf-kontur px-3 py-1.5 text-[12px]">
+                          PDF
+                        </button>
+                        <button type="button"
+                          onClick={() => downloadDatei(`/orgs/${getOrgId()}/personal/einladungen/${e.id}/csv`, `Personalbogen_${e.mitarbeiter_name ?? e.id}.csv`)}
+                          className="knopf knopf-kontur px-3 py-1.5 text-[12px]">
+                          CSV
+                        </button>
+                        <button type="button"
+                          onClick={() => setOffenId(offenId === e.id ? null : e.id)}
+                          className="knopf knopf-primaer px-3.5 py-1.5 text-[12px]">
+                          {offenId === e.id ? "Zuklappen" : "Daten ansehen"}
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>

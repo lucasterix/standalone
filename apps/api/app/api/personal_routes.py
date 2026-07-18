@@ -10,7 +10,7 @@ from __future__ import annotations
 import secrets
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session as DbSession
@@ -19,7 +19,15 @@ from app.core.auth import OrgZugriff, require_org
 from app.db import get_db
 from app.models.org import Org
 from app.models.personal import PersonalEinladung
-from app.services import audit
+from app.services import audit, exporte
+
+
+def _ascii_name(text: str) -> str:
+    """HTTP-Header sind Latin-1/ASCII — Umlaute im Dateinamen ersetzen."""
+    trans = str.maketrans({"ä": "ae", "ö": "oe", "ü": "ue", "Ä": "Ae",
+                           "Ö": "Oe", "Ü": "Ue", "ß": "ss", " ": "_"})
+    roh = (text or "personalbogen").translate(trans)
+    return "".join(c for c in roh if c.isascii() and (c.isalnum() or c in "_-")) or "personalbogen"
 
 router = APIRouter(tags=["personal"])
 
@@ -111,6 +119,58 @@ def einladung_zurueckziehen(
     e.status = "zurueckgezogen"
     db.commit()
     return _einladung_dict(e)
+
+
+@router.get("/orgs/{org_id}/personal/einladungen/{eid}/pdf")
+def einladung_pdf(
+    org_id: int, eid: int,
+    z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
+) -> Response:
+    e = db.get(PersonalEinladung, eid)
+    if e is None or e.org_id != org_id or e.status != "ausgefuellt":
+        raise HTTPException(404, "Kein ausgefüllter Bogen")
+    name = _ascii_name(e.mitarbeiter_name or "")
+    return Response(
+        content=exporte.personal_pdf(z.org, e), media_type="application/pdf",
+        headers={"Content-Disposition":
+                 f'attachment; filename="Personalbogen_{name}.pdf"'},
+    )
+
+
+@router.get("/orgs/{org_id}/personal/einladungen/{eid}/csv")
+def einladung_csv(
+    org_id: int, eid: int,
+    z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
+) -> Response:
+    e = db.get(PersonalEinladung, eid)
+    if e is None or e.org_id != org_id or e.status != "ausgefuellt":
+        raise HTTPException(404, "Kein ausgefüllter Bogen")
+    name = _ascii_name(e.mitarbeiter_name or "")
+    return Response(
+        content=exporte.personal_csv([e]), media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition":
+                 f'attachment; filename="Personalbogen_{name}.csv"'},
+    )
+
+
+@router.get("/orgs/{org_id}/personal/export.csv")
+def personal_sammel_csv(
+    org_id: int, z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
+) -> Response:
+    alle = [
+        e for e in db.scalars(
+            select(PersonalEinladung).where(
+                PersonalEinladung.org_id == org_id,
+                PersonalEinladung.status == "ausgefuellt",
+            ).order_by(PersonalEinladung.ausgefuellt_am)
+        )
+    ]
+    if not alle:
+        raise HTTPException(404, "Noch keine ausgefüllten Bögen")
+    return Response(
+        content=exporte.personal_csv(alle), media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="personal_alle.csv"'},
+    )
 
 
 # --------------------------------------------------------------------------- #
