@@ -9,7 +9,8 @@ from datetime import date, datetime
 from decimal import Decimal
 
 from sqlalchemy import (
-    JSON, Boolean, Date, DateTime, ForeignKey, Integer, Numeric, String, Text,
+    JSON, Boolean, Date, DateTime, ForeignKey, Integer, LargeBinary, Numeric,
+    String, Text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -40,6 +41,21 @@ class Beleg(Base):
     tx_id: Mapped[int | None] = mapped_column(ForeignKey("bank_transaktion.id"), nullable=True)
     journal_id: Mapped[int | None] = mapped_column(ForeignKey("journal.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class BelegDatei(Base):
+    """Datei-Inhalt zum Beleg — eigene Tabelle (Bestands-Systeme: create_all
+    legt sie an, kein ALTER auf `beleg` nötig; Blobs bleiben aus Listen raus)."""
+
+    __tablename__ = "beleg_datei"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    org_id: Mapped[int] = mapped_column(ForeignKey("org.id"), nullable=False, index=True)
+    beleg_id: Mapped[int] = mapped_column(ForeignKey("beleg.id"), nullable=False, unique=True)
+    dateiname: Mapped[str] = mapped_column(String(255), nullable=False)
+    mime: Mapped[str] = mapped_column(String(100), nullable=False)
+    groesse: Mapped[int] = mapped_column(Integer, nullable=False)
+    inhalt: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
 
 
 class Rueckfrage(Base):

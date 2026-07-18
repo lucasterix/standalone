@@ -177,6 +177,9 @@ export default function Buchungen() {
                       <span className="block truncate text-[11.5px] text-sand-500">{j.begruendung}</span>
                     )}
                   </span>
+                  {j.beleg && (
+                    <span aria-hidden title="Beleg vorhanden" className="text-[13px]">📎</span>
+                  )}
                   <ViaBadge j={j} />
                   {/* Gegenkonto: klickbar, außer gesperrt */}
                   {bearbeite === j.id ? (

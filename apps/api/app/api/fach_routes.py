@@ -1,15 +1,19 @@
 """Fach-Routen: Belege, Rückfragen, Klärungsfälle, Vorjahres-Import."""
 from datetime import date
+from decimal import Decimal
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import (
+    APIRouter, Body, Depends, Form, HTTPException, Response, UploadFile,
+)
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session as DbSession
 
 from app.core.auth import OrgZugriff, current_user, org_zugriff, require_org
 from app.db import get_db
-from app.models.fach import Beleg, Klaerungsfall, Rueckfrage, RueckfrageNachricht
-from app.services import audit, vorjahr
+from app.models.bank import BankTransaktion
+from app.models.fach import BelegDatei, Beleg, Klaerungsfall, Rueckfrage, RueckfrageNachricht
+from app.services import audit, belege as belege_service, vorjahr
 
 router = APIRouter(tags=["fach"])
 
@@ -44,6 +48,115 @@ def beleg_anlegen(
     return {"id": b.id, "status": b.status}
 
 
+def _tx_dict(t: BankTransaktion) -> dict:
+    return {"id": t.id, "datum": t.buchungstag.isoformat(),
+            "betrag": str(t.betrag), "name": t.name, "zweck": (t.zweck or "")[:80]}
+
+
+@router.post("/orgs/{org_id}/belege/upload")
+async def beleg_upload(
+    org_id: int, datei: UploadFile,
+    betrag: str | None = Form(None), datum: str | None = Form(None),
+    z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
+) -> dict:
+    if z.rolle == "kanzlei":
+        raise HTTPException(403, "Belege lädt nur das Unternehmen hoch")
+    inhalt = await datei.read()
+    if len(inhalt) > 10 * 1024 * 1024:
+        raise HTTPException(413, "Datei zu groß (max. 10 MB)")
+    mime = datei.content_type or "application/octet-stream"
+    if not any(t in mime for t in ("pdf", "image/jpeg", "image/png")):
+        raise HTTPException(400, "Bitte PDF, JPG oder PNG hochladen")
+
+    ex = belege_service.extrahiere(inhalt, mime)
+    # Nutzer-Angaben schlagen Extraktion (der Mensch weiß es besser).
+    if betrag:
+        try:
+            ex["betrag"] = Decimal(betrag.replace(".", "").replace(",", "."))
+        except Exception:
+            raise HTTPException(400, "Betrag nicht lesbar (z. B. 123,45)")
+    if datum:
+        try:
+            ex["datum"] = date.fromisoformat(datum)
+        except ValueError:
+            raise HTTPException(400, "Datum: JJJJ-MM-TT")
+
+    b = Beleg(
+        org_id=org_id, quelle="upload",
+        art="pdf" if "pdf" in mime else "foto",
+        datei_name=datei.filename,
+        rechnungs_nr=ex.get("rechnungs_nr"),
+        rechnungs_datum=ex.get("datum"),
+        betrag_brutto=ex.get("betrag"),
+        status="extrahiert" if ex else "neu",
+    )
+    db.add(b)
+    db.flush()
+    db.add(BelegDatei(org_id=org_id, beleg_id=b.id,
+                      dateiname=datei.filename or f"beleg-{b.id}",
+                      mime=mime, groesse=len(inhalt), inhalt=inhalt))
+    treffer = belege_service.zuordnung_versuchen(db, b)
+    audit.log(db, org_id=org_id, user_id=z.user.id, aktion="beleg.upload",
+              details={"beleg": b.id, "status": b.status,
+                       "kandidaten": len(treffer)})
+    db.commit()
+    return {
+        "id": b.id, "status": b.status,
+        "betrag": str(b.betrag_brutto) if b.betrag_brutto is not None else None,
+        "datum": b.rechnungs_datum.isoformat() if b.rechnungs_datum else None,
+        "rechnungs_nr": b.rechnungs_nr,
+        "tx": _tx_dict(db.get(BankTransaktion, b.tx_id)) if b.tx_id else None,
+        "kandidaten": [] if b.tx_id else [_tx_dict(t) for t in treffer],
+    }
+
+
+@router.post("/orgs/{org_id}/belege/{beleg_id}/zuordnen")
+def beleg_zuordnen(
+    org_id: int, beleg_id: int, tx_id: int = Body(..., embed=True),
+    z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
+) -> dict:
+    b = db.get(Beleg, beleg_id)
+    if b is None or b.org_id != org_id:
+        raise HTTPException(404, "Beleg nicht gefunden")
+    t = db.get(BankTransaktion, tx_id)
+    if t is None or t.org_id != org_id:
+        raise HTTPException(404, "Transaktion nicht gefunden")
+    b.tx_id = t.id
+    b.status = "zugeordnet"
+    audit.log(db, org_id=org_id, user_id=z.user.id, aktion="beleg.zugeordnet",
+              details={"beleg": b.id, "tx": t.id})
+    db.commit()
+    return {"ok": True}
+
+
+@router.post("/orgs/{org_id}/belege/{beleg_id}/loesen")
+def beleg_loesen(
+    org_id: int, beleg_id: int,
+    z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
+) -> dict:
+    b = db.get(Beleg, beleg_id)
+    if b is None or b.org_id != org_id:
+        raise HTTPException(404, "Beleg nicht gefunden")
+    b.tx_id = None
+    b.status = "extrahiert" if b.betrag_brutto is not None else "neu"
+    db.commit()
+    return {"ok": True}
+
+
+@router.get("/orgs/{org_id}/belege/{beleg_id}/datei")
+def beleg_datei(
+    org_id: int, beleg_id: int,
+    z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
+) -> Response:
+    d = db.scalar(select(BelegDatei).where(
+        BelegDatei.org_id == org_id, BelegDatei.beleg_id == beleg_id))
+    if d is None:
+        raise HTTPException(404, "Keine Datei zu diesem Beleg")
+    return Response(content=d.inhalt, media_type=d.mime,
+                    headers={"Content-Disposition":
+                             f'inline; filename="{d.dateiname}"'})
+
+
 @router.get("/orgs/{org_id}/belege")
 def belege_liste(
     org_id: int, status: str | None = None,
@@ -52,14 +165,29 @@ def belege_liste(
     q = select(Beleg).where(Beleg.org_id == org_id)
     if status:
         q = q.where(Beleg.status == status)
-    return [
-        {"id": b.id, "quelle": b.quelle, "art": b.art, "lieferant": b.lieferant,
-         "rechnungs_nr": b.rechnungs_nr, "betrag_brutto":
-             str(b.betrag_brutto) if b.betrag_brutto is not None else None,
-         "konto_vorschlag": b.konto_vorschlag, "status": b.status,
-         "tx_id": b.tx_id}
-        for b in db.scalars(q.order_by(Beleg.id.desc()).limit(200))
-    ]
+    out = []
+    for b in db.scalars(q.order_by(Beleg.id.desc()).limit(200)):
+        eintrag = {
+            "id": b.id, "quelle": b.quelle, "art": b.art,
+            "lieferant": b.lieferant, "datei_name": b.datei_name,
+            "rechnungs_nr": b.rechnungs_nr,
+            "datum": b.rechnungs_datum.isoformat() if b.rechnungs_datum else None,
+            "betrag_brutto":
+                str(b.betrag_brutto) if b.betrag_brutto is not None else None,
+            "konto_vorschlag": b.konto_vorschlag, "status": b.status,
+            "tx": None, "kandidaten": [],
+        }
+        if b.tx_id:
+            t = db.get(BankTransaktion, b.tx_id)
+            if t is not None:
+                eintrag["tx"] = _tx_dict(t)
+        elif b.betrag_brutto is not None:
+            eintrag["kandidaten"] = [
+                _tx_dict(t) for t in belege_service.kandidaten(
+                    db, org_id, b.betrag_brutto, b.rechnungs_datum)
+            ]
+        out.append(eintrag)
+    return out
 
 
 # --------------------------------------------------------------------------- #

@@ -19,6 +19,7 @@ const NAV = [
   { href: "/app/pruefliste", label: "Prüfliste", icon: "☑" },
   { href: "/app/import", label: "Bank-Import", icon: "⇣" },
   { href: "/app/buchungen", label: "Buchungen", icon: "≣" },
+  { href: "/app/belege", label: "Belege", icon: "⎘" },
   { href: "/app/verkauf", label: "Verkauf", icon: "▤" },
   { href: "/app/personal", label: "Personal", icon: "⚉" },
   { href: "/app/datev", label: "DATEV", icon: "⇪" },

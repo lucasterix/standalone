@@ -24,6 +24,7 @@ from app.core.auth import OrgZugriff, current_user, org_zugriff, require_org
 from app.core.settings import settings
 from app.db import Base, engine, get_db
 from app.models.bank import BankKonto
+from app.models.fach import Beleg
 from app.models.fibu import DatevStapel, Journal, PartnerRegel, Personenkonto
 from app.models.org import Org, OrgMember, User
 from app.services import (
@@ -259,6 +260,11 @@ def journal_liste(
             select(BankKonto).where(BankKonto.org_id == org_id)
         )
     }
+    belegte_tx = {
+        b.tx_id for b in db.scalars(
+            select(Beleg).where(Beleg.org_id == org_id, Beleg.tx_id.isnot(None))
+        )
+    }
     def _richtung(j: Journal) -> str:
         if j.soll in bank_konten:
             return "einnahme"
@@ -274,6 +280,7 @@ def journal_liste(
             "status": j.status, "origin": j.origin,
             "confidence": str(j.confidence), "begruendung": j.begruendung,
             "entschieden_via": j.entschieden_via,
+            "beleg": j.tx_id in belegte_tx,
         }
         for j in rows
     ]

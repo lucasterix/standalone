@@ -125,6 +125,7 @@ export type JournalZeile = {
   confidence: string;
   begruendung: string | null;
   entschieden_via: string | null;
+  beleg?: boolean;
 };
 
 export type SaldoMonat = {

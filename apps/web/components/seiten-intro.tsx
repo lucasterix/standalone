@@ -65,6 +65,15 @@ const INTROS: Record<string, Intro> = {
       "In DATEV übernommene Sätze tragen ein Schloss — die ändert nur noch Ihre Kanzlei per Storno (Festschreibung).",
     ],
   },
+  "/app/belege": {
+    titel: "Die Belege",
+    emoji: "📎",
+    punkte: [
+      "Rechnung als PDF oder Foto hochladen — Text-PDFs liest das System selbst (Betrag, Datum, Rechnungsnummer).",
+      "Passt genau ein Bankumsatz, wird der Beleg automatisch angehängt; bei mehreren wählen Sie mit einem Klick aus der Kandidatenliste.",
+      "Zugeordnete Belege sieht auch Ihre Kanzlei an der Buchung — GoBD-Ablage inklusive.",
+    ],
+  },
   "/app/verkauf": {
     titel: "Der Verkauf",
     emoji: "🧾",
