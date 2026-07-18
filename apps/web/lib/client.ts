@@ -1,24 +1,26 @@
 /* API-Client der echten App (/app): same-origin unter /api (Caddy routet).
-   Session-Token in localStorage — für die Pilot-/Demo-Phase bewusst simpel;
-   produktiv wandert das auf httpOnly-Cookies (PLAN P1). */
+   Auth läuft über ein httpOnly-Cookie (kk_session), das der Server beim Login
+   setzt — JS sieht das Token nie. Im localStorage liegt nur noch die gewählte
+   Org + ein „angemeldet"-Marker für den Guard (der Server bleibt die Wahrheit:
+   401 → Login). */
 
 const BASE = "/api";
 
-const TOKEN_KEY = "kk_token";
+const ANGEMELDET_KEY = "kk_angemeldet";
 const ORG_KEY = "kk_org";
 
-export function getToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return window.localStorage.getItem(TOKEN_KEY);
+export function istAngemeldet(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem(ANGEMELDET_KEY) === "1";
 }
 
-export function setSession(token: string, orgId: number | null) {
-  window.localStorage.setItem(TOKEN_KEY, token);
+export function setSession(orgId: number | null) {
+  window.localStorage.setItem(ANGEMELDET_KEY, "1");
   if (orgId != null) window.localStorage.setItem(ORG_KEY, String(orgId));
 }
 
 export function clearSession() {
-  window.localStorage.removeItem(TOKEN_KEY);
+  window.localStorage.removeItem(ANGEMELDET_KEY);
   window.localStorage.removeItem(ORG_KEY);
 }
 
@@ -43,10 +45,8 @@ export class ApiError extends Error {
 async function request<T>(method: string, pfad: string, body?: unknown): Promise<T> {
   const res = await fetch(`${BASE}${pfad}`, {
     method,
-    headers: {
-      "Content-Type": "application/json",
-      ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
-    },
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   if (!res.ok) {
@@ -68,11 +68,29 @@ export const api = {
   patch: <T>(p: string, body?: unknown) => request<T>("PATCH", p, body),
 };
 
-/* Datei-Download mit Auth (EXTF): fetch → Blob → Klick. */
-export async function downloadDatei(pfad: string, dateiname: string) {
+/* Datei-Upload (CSV-Import): multipart, Cookie-Auth. */
+export async function uploadDatei<T>(pfad: string, datei: File): Promise<T> {
+  const form = new FormData();
+  form.append("datei", datei);
   const res = await fetch(`${BASE}${pfad}`, {
-    headers: getToken() ? { Authorization: `Bearer ${getToken()}` } : {},
+    method: "POST",
+    credentials: "same-origin",
+    body: form,
   });
+  if (!res.ok) {
+    let detail = `HTTP ${res.status}`;
+    try {
+      const j = await res.json();
+      if (j?.detail) detail = typeof j.detail === "string" ? j.detail : JSON.stringify(j.detail);
+    } catch { /* leer */ }
+    throw new ApiError(res.status, detail);
+  }
+  return res.json() as Promise<T>;
+}
+
+/* Datei-Download (EXTF): fetch → Blob → Klick. */
+export async function downloadDatei(pfad: string, dateiname: string) {
+  const res = await fetch(`${BASE}${pfad}`, { credentials: "same-origin" });
   if (!res.ok) throw new ApiError(res.status, `Download fehlgeschlagen (${res.status})`);
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
@@ -146,4 +164,11 @@ export type CockpitZeile = {
   stapel_status: string | null;
   stapel_saetze: number;
   rueckfragen_offen: number;
+};
+
+export type ImportErgebnis = {
+  neu: number;
+  uebersprungen: number;
+  vorgeschlagen: number;
+  auto_gebucht: number;
 };

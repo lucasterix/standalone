@@ -12,7 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 
-from fastapi import Depends, Header, HTTPException
+from fastapi import Depends, Header, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session as DbSession
 
@@ -23,13 +23,20 @@ from app.models.org import KanzleiMandat, Org, OrgMember, User
 
 
 def current_user(
+    request: Request,
     authorization: str = Header(default=""),
     db: DbSession = Depends(get_db),
 ) -> User:
-    if not authorization.startswith("Bearer "):
+    """Browser: httpOnly-Cookie ``kk_session``; API-Clients: Bearer-Header."""
+    token = None
+    if authorization.startswith("Bearer "):
+        token = authorization[7:]
+    else:
+        token = request.cookies.get("kk_session")
+    if not token:
         raise HTTPException(401, "Nicht angemeldet")
     sess = db.scalar(
-        select(Session).where(Session.token_hash == token_hash(authorization[7:]))
+        select(Session).where(Session.token_hash == token_hash(token))
     )
     if sess is None or sess.expires_at < datetime.utcnow():
         raise HTTPException(401, "Sitzung abgelaufen — bitte neu anmelden")

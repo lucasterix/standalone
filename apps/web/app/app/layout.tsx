@@ -6,12 +6,13 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { api, clearSession, getOrgId, getToken, setOrgId, type Ich } from "@/lib/client";
+import { api, clearSession, getOrgId, istAngemeldet, setOrgId, type Ich } from "@/lib/client";
 import { BRAND } from "@/lib/brand";
 
 const NAV = [
   { href: "/app", label: "Übersicht", icon: "◧" },
   { href: "/app/pruefliste", label: "Prüfliste", icon: "☑" },
+  { href: "/app/import", label: "Bank-Import", icon: "⇣" },
   { href: "/app/datev", label: "DATEV", icon: "⇪" },
 ];
 
@@ -23,7 +24,7 @@ export default function AppLayout({
   const [ich, setIch] = useState<Ich | null>(null);
 
   useEffect(() => {
-    if (!getToken()) {
+    if (!istAngemeldet()) {
       router.replace("/login/");
       return;
     }

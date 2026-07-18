@@ -1,7 +1,7 @@
 """Auth: Registrieren, Login, Logout, Ich."""
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session as DbSession
@@ -36,7 +36,8 @@ class LoginIn(BaseModel):
     passwort: str
 
 
-def _neue_session(db: DbSession, user: User, user_agent: str | None) -> str:
+def _neue_session(db: DbSession, user: User, user_agent: str | None,
+                  response: Response) -> str:
     token, thash = new_session_token()
     db.add(Session(
         user_id=user.id, token_hash=thash,
@@ -44,12 +45,19 @@ def _neue_session(db: DbSession, user: User, user_agent: str | None) -> str:
         user_agent=(user_agent or "")[:200] or None,
     ))
     db.commit()
+    # httpOnly-Cookie fuer den Browser (same-origin unter /); das Token wird
+    # ZUSAETZLICH zurueckgegeben fuer API-Clients (Bearer) — beide Wege gelten.
+    response.set_cookie(
+        "kk_session", token, max_age=_SESSION_TAGE * 86400,
+        httponly=True, secure=True, samesite="lax", path="/",
+    )
     return token
 
 
 @router.post("/registrieren")
 def registrieren(
     body: RegistrierenIn,
+    response: Response,
     user_agent: str | None = Header(default=None, alias="User-Agent"),
     db: DbSession = Depends(get_db),
 ) -> dict:
@@ -73,13 +81,14 @@ def registrieren(
             db.add(BankKonto(org_id=org.id, name="Bank", sachkonto=prof.bank))
         org_id = org.id
     audit.log(db, org_id=org_id, user_id=user.id, aktion="auth.registriert")
-    token = _neue_session(db, user, user_agent)
+    token = _neue_session(db, user, user_agent, response)
     return {"token": token, "user_id": user.id, "org_id": org_id}
 
 
 @router.post("/login")
 def login(
     body: LoginIn,
+    response: Response,
     user_agent: str | None = Header(default=None, alias="User-Agent"),
     db: DbSession = Depends(get_db),
 ) -> dict:
@@ -90,7 +99,7 @@ def login(
     if not user.aktiv:
         raise HTTPException(401, "Konto deaktiviert.")
     audit.log(db, org_id=None, user_id=user.id, aktion="auth.login")
-    token = _neue_session(db, user, user_agent)
+    token = _neue_session(db, user, user_agent, response)
     orgs = [
         {"org_id": m.org_id, "rolle": m.rolle,
          "name": db.get(Org, m.org_id).name, "art": db.get(Org, m.org_id).art}
@@ -101,14 +110,20 @@ def login(
 
 @router.post("/logout")
 def logout(
+    request: Request,
+    response: Response,
     authorization: str = Header(default=""),
     db: DbSession = Depends(get_db),
 ) -> dict:
+    token = None
     if authorization.startswith("Bearer "):
-        db.execute(delete(Session).where(
-            Session.token_hash == token_hash(authorization[7:])
-        ))
+        token = authorization[7:]
+    elif request.cookies.get("kk_session"):
+        token = request.cookies["kk_session"]
+    if token:
+        db.execute(delete(Session).where(Session.token_hash == token_hash(token)))
         db.commit()
+    response.delete_cookie("kk_session", path="/")
     return {"ok": True}
 
 

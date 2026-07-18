@@ -125,3 +125,38 @@ def test_seed_demo(client):
     r = c.get(f"/kanzlei/{res['kanzlei_org_id']}/cockpit",
               params={"jahr": 2026}, headers=_h(kt))
     assert r.json()["mandate"][0]["rueckfragen_offen"] == 1
+
+
+def test_cookie_login_und_csv_upload(client):
+    """Browser-Weg: Cookie-Auth (ohne Bearer) + Datei-Upload-Endpoint."""
+    r = client.post("/auth/registrieren", json={
+        "email": "cookie@test.example", "name": "Cookie Test",
+        "passwort": "cookie-pass-123",
+        "org_name": "Upload GmbH", "org_chart": "skr45",
+    })
+    assert r.status_code == 200
+    org_id = r.json()["org_id"]
+    assert "kk_session" in r.cookies  # httpOnly-Cookie gesetzt
+
+    # TestClient hält Cookies — KEIN Authorization-Header noetig.
+    ich = client.get("/auth/ich")
+    assert ich.status_code == 200
+    assert ich.json()["email"] == "cookie@test.example"
+
+    csv_text = (
+        "Buchungstag;Verwendungszweck;Name Zahlungsbeteiligter;IBAN;Betrag;Waehrung\n"
+        "03.06.2026;Miete Juni;Hausverwaltung Nord;DE11222233334444555566;-1.850,00;EUR\n"
+        "04.06.2026;Telefon;Telekom Deutschland GmbH;DE99888877776666555544;-89,90;EUR\n"
+    )
+    r = client.post(
+        f"/orgs/{org_id}/bank/upload",
+        files={"datei": ("umsatz.csv", csv_text.encode("utf-8"), "text/csv")},
+    )
+    assert r.status_code == 200, r.text
+    res = r.json()
+    assert res["neu"] == 2
+    assert res["vorgeschlagen"] == 2
+
+    # Logout löscht die Session — danach 401.
+    client.post("/auth/logout")
+    assert client.get("/auth/ich").status_code == 401

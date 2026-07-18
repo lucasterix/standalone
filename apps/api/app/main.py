@@ -8,7 +8,9 @@ verbunden werden.
 from datetime import date
 from decimal import Decimal
 
-from fastapi import Body, Depends, FastAPI, HTTPException, Query, Response
+from fastapi import (
+    Body, Depends, FastAPI, HTTPException, Query, Response, UploadFile,
+)
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session as DbSession
@@ -105,6 +107,47 @@ def bank_import_csv(
         raise HTTPException(400, str(exc))
     audit.log(db, org_id=org_id, user_id=z.user.id, aktion="bank.csv_import",
               details=res)
+    db.commit()
+    return res
+
+
+@app.post("/orgs/{org_id}/bank/upload")
+async def bank_upload(
+    org_id: int, datei: UploadFile,
+    z: OrgZugriff = Depends(require_org), db: DbSession = Depends(get_db),
+) -> dict:
+    """Browser-Upload: CSV-Datei rein → Import + Kontierung + Autopilot in
+    einem Zug. Antwort sagt, was passiert ist — die Zahlen, nicht der Vorgang,
+    sind der Magic Moment."""
+    roh = await datei.read()
+    if len(roh) > 10 * 1024 * 1024:
+        raise HTTPException(413, "Datei zu groß (max. 10 MB)")
+    text = None
+    for enc in ("utf-8-sig", "latin-1"):
+        try:
+            text = roh.decode(enc)
+            break
+        except UnicodeDecodeError:
+            continue
+    if text is None:
+        raise HTTPException(400, "Datei ist keine lesbare CSV (UTF-8/Latin-1)")
+    konto = db.scalar(select(BankKonto).where(BankKonto.org_id == org_id))
+    if konto is None:
+        raise HTTPException(400, "Kein Bankkonto angelegt")
+    try:
+        imp = csv_import.import_csv(db, org_id, konto, text)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    prop = kontierung.propose(db, org_id)
+    auto = autopilot.run(db, org_id)
+    res = {
+        "neu": imp.get("neu", 0),
+        "uebersprungen": imp.get("uebersprungen", 0),
+        "vorgeschlagen": prop.get("neu", 0),
+        "auto_gebucht": auto.get("bestaetigt", 0),
+    }
+    audit.log(db, org_id=org_id, user_id=z.user.id, aktion="bank.upload",
+              details={"datei": datei.filename, **res})
     db.commit()
     return res
 

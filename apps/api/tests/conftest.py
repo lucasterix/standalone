@@ -41,5 +41,6 @@ def client():
     Base.metadata.create_all(bind=engine)
     from app.main import app
 
-    with TestClient(app) as c:
+    # https-Base, damit der Secure-Session-Cookie im Test mitgeschickt wird.
+    with TestClient(app, base_url="https://testserver") as c:
         yield c

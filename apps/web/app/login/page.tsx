@@ -7,7 +7,6 @@ import { api, setSession } from "@/lib/client";
 import { BRAND } from "@/lib/brand";
 
 type LoginAntwort = {
-  token: string;
   user_id: number;
   name: string;
   orgs: { org_id: number; rolle: string; name: string; art: string }[];
@@ -30,7 +29,7 @@ export default function Login() {
         passwort: pw ?? passwort,
       });
       const erste = r.orgs[0];
-      setSession(r.token, erste ? erste.org_id : null);
+      setSession(erste ? erste.org_id : null);
       router.push(erste?.art === "kanzlei" ? "/app/kanzlei/" : "/app/");
     } catch (err) {
       setFehler(err instanceof Error ? err.message : "Anmeldung fehlgeschlagen");
@@ -101,6 +100,13 @@ export default function Login() {
             {laedt ? "Melde an …" : "Anmelden"}
           </button>
         </form>
+
+        <p className="mt-4 text-center text-[13.5px] text-sand-600">
+          Noch kein Konto?{" "}
+          <Link href="/registrieren/" className="font-semibold text-brand-700 underline">
+            Kostenlos starten
+          </Link>
+        </p>
 
         {/* Demo-Zugänge (Seed) — bewusst sichtbar für Pilot-Interessenten. */}
         <div className="mt-4 rounded-2xl border border-dashed border-brand-300 bg-brand-50/60 px-5 py-4 text-[13px] text-brand-900">
